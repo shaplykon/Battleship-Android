@@ -1,2 +1,1 @@
-# battleship-android
-Online "Battleship" android game
+# Nikita Shaplyko (gr. 853502)
