@@ -23,4 +23,9 @@
     <string name="forgor_your_password">Forgor your password?</string>
     <string name="sign_out">Sign out</string>
     <string name="profile">Profile</string>
+    <string name="confirm">Confirm</string>
+    <string name="name">Name</string>
+    <string name="username">Username:</string>
+    <string name="profile_image">Profile image</string>
+    <string name="use_gravatar">Use Gravatar</string>
 </resources>
