@@ -1,6 +1,5 @@
 package com.example.battleship;
 
-import java.util.*;
 import java.io.*;
 import java.security.*;
 
