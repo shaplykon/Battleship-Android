@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -18,7 +19,7 @@ import com.google.firebase.database.ValueEventListener;
 public class CreateGameActivity extends AppCompatActivity {
 
     TextView gameIdTextView;
-
+    ProgressBar progressBar;
     int MIN_ID = 100000;
     int MAX_ID = 1000000;
     User hostUser;
@@ -30,12 +31,26 @@ public class CreateGameActivity extends AppCompatActivity {
         setContentView(R.layout.activity_create_game);
 
         String hostUid = FirebaseAuth.getInstance().getUid();
+
+        gameIdTextView = findViewById(R.id.gameIdTextView);
+        gameId = String.valueOf((int)((Math.random() * ((MAX_ID - MIN_ID) + 1)) + MIN_ID));
+
         DatabaseReference usersDatabaseReference = FirebaseDatabase.getInstance().getReference().child("users").child(hostUid);
+        DatabaseReference gamesDatabaseReference = FirebaseDatabase.getInstance().getReference("/games/" + gameId);
+
+        progressBar = findViewById(R.id.progressBar);
 
         usersDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                hostUser= snapshot.getValue(User.class);
+                hostUser = snapshot.getValue(User.class);
+
+                progressBar.setVisibility(View.INVISIBLE);
+                gameIdTextView.setVisibility(View.VISIBLE);
+                gameIdTextView.append(gameId);
+
+                Game game = new Game(hostUser, gameId);
+                gamesDatabaseReference.setValue(game);
             }
 
             @Override
@@ -43,19 +58,6 @@ public class CreateGameActivity extends AppCompatActivity {
 
             }
         });
-
-        gameIdTextView = findViewById(R.id.gameIdTextView);
-        gameId = String.valueOf((int)((Math.random() * ((MAX_ID - MIN_ID) + 1)) + MIN_ID));
-        gameIdTextView.append(gameId);
-
-        DatabaseReference gamesDatabaseReference = FirebaseDatabase.getInstance().getReference("/games/" + gameId);
-
-        Button button = findViewById(R.id.button2);
-        button.setOnClickListener(v -> {
-            Game game = new Game(hostUser, gameId);
-            gamesDatabaseReference.setValue(game);
-        });
-
     }
 
     @Override

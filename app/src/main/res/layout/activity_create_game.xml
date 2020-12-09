@@ -24,14 +24,8 @@
         android:layout_marginTop="316dp"
         android:text="Invite your friend via given ID:  "
         android:textSize="18sp"
+        android:visibility="invisible"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/button2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Button"
-        tools:layout_editor_absoluteX="162dp"
-        tools:layout_editor_absoluteY="472dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>
