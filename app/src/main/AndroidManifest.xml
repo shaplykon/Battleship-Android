@@ -10,7 +10,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Battleship">
-        <activity android:name=".CreateGameActivity"></activity>
+        <activity android:name=".ConnectActivity"></activity>
+        <activity android:name=".CreateGameActivity" />
         <activity android:name=".ProfileActivity" />
         <activity android:name=".MainActivity">
             <intent-filter>

@@ -1,7 +1,6 @@
 package com.example.battleship;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -26,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
 
     Button signInButton;
     Button profileButton;
-    Button findGameButton;
+    Button connectButton;
     Button createGameButton;
     TextView usernameLabel;
     FirebaseAuth mAuth;
@@ -40,12 +39,20 @@ public class MainActivity extends AppCompatActivity {
         usernameLabel = findViewById(R.id.usernameLabel);
         mAuth = FirebaseAuth.getInstance();
 
-        findGameButton = findViewById(R.id.findGameButton);
+        connectButton = findViewById(R.id.connectButton);
         createGameButton = findViewById(R.id.createGameButton);
 
         createGameButton.setOnClickListener(v -> {
             Intent intent = new Intent(getApplicationContext(), CreateGameActivity.class);
             startActivity(intent);
+        });
+
+        connectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), ConnectActivity.class);
+                startActivity(intent);
+            }
         });
 
         profileButton =  findViewById(R.id.profileButton);
