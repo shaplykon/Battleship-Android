@@ -23,8 +23,11 @@ import java.util.Objects;
 public class MainActivity extends AppCompatActivity {
 
     private static final int RC_SIGN_IN = 1;
+
     Button signInButton;
     Button profileButton;
+    Button findGameButton;
+    Button createGameButton;
     TextView usernameLabel;
     FirebaseAuth mAuth;
 
@@ -36,6 +39,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         usernameLabel = findViewById(R.id.usernameLabel);
         mAuth = FirebaseAuth.getInstance();
+
+        findGameButton = findViewById(R.id.findGameButton);
+        createGameButton = findViewById(R.id.createGameButton);
+
+        createGameButton.setOnClickListener(v -> {
+            Intent intent = new Intent(getApplicationContext(), CreateGameActivity.class);
+            startActivity(intent);
+        });
 
         profileButton =  findViewById(R.id.profileButton);
         profileButton.setOnClickListener(v-> {
