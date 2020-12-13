@@ -10,7 +10,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Battleship">
-        <activity android:name=".Activities.GameActivity" />
+        <activity
+            android:name=".Activities.GameActivity"
+            android:screenOrientation="landscape"
+            />
         <activity android:name=".Activities.ConnectActivity" />
         <activity android:name=".Activities.CreateGameActivity" />
         <activity android:name=".Activities.ProfileActivity" />

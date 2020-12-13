@@ -3,6 +3,7 @@ package com.example.battleship.Activities;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -62,10 +63,13 @@ public class ConnectActivity extends AppCompatActivity {
                         textView.append(game.hostUser.username);
                         game.connectedUser = new User(currentUser.getUid(), currentUser.getDisplayName(), currentUser.getPhotoUrl().toString());
                         gamesDatabaseReference.setValue(game);
-                        SimpleDraweeView hostView =  findViewById(R.id.hostImage);
+                      /*  SimpleDraweeView hostView =  findViewById(R.id.hostImage);
                         SimpleDraweeView connectedView = findViewById(R.id.connectedImage);
                         connectedView.setImageURI(Uri.parse(game.connectedUser.profileImageUrl));
-                        hostView.setImageURI(Uri.parse(game.hostUser.profileImageUrl));
+                        hostView.setImageURI(Uri.parse(game.hostUser.profileImageUrl));*/
+                        Intent intent = new Intent(getApplicationContext(), GameActivity.class);
+                        startActivity(intent);
+
                     }
 
                     @Override

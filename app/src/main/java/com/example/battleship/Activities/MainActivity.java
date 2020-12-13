@@ -28,9 +28,7 @@ public class MainActivity extends AppCompatActivity {
     Button profileButton;
     Button connectButton;
     Button createGameButton;
-    TextView usernameLabel;
     FirebaseAuth mAuth;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,9 +36,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-
-        usernameLabel = findViewById(R.id.usernameLabel);
         mAuth = FirebaseAuth.getInstance();
 
         connectButton = findViewById(R.id.connectButton);
@@ -54,10 +49,8 @@ public class MainActivity extends AppCompatActivity {
         connectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-              //  Intent intent = new Intent(getApplicationContext(), ConnectActivity.class);
-              //  startActivity(intent);
-                Intent qintent = new Intent(getApplicationContext(), GameActivity.class);
-                startActivity(qintent);
+                Intent intent = new Intent(getApplicationContext(), ConnectActivity.class);
+                startActivity(intent);
             }
         });
 
@@ -103,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
     
     @SuppressLint("SetTextI18n")
     private void updateUI(){
-        usernameLabel.setText("You are welcome, "  + Objects.requireNonNull(mAuth.getCurrentUser()).getDisplayName());
+
         
     }
 }
