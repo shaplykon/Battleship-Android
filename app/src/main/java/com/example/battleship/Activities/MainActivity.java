@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
                 FirebaseUser user = mAuth.getCurrentUser();
                 updateUI();
             } else {
-                Toast.makeText(this, "Problem ocurred while authenticating", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Problem occurred while authenticating", Toast.LENGTH_SHORT).show();
                         
             }
         }
