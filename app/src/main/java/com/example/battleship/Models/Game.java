@@ -1,4 +1,4 @@
-package com.example.battleship;
+package com.example.battleship.Models;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.List;
 public class Game {
     public User hostUser;
     public User connectedUser;
-    public List<ArrayList<Integer>> firstPlayerField;
+
     public List<ArrayList<Integer>> secondPlayerField;
     public String gameId;
 

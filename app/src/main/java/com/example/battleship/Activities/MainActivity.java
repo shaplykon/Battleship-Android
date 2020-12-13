@@ -1,4 +1,4 @@
-package com.example.battleship;
+package com.example.battleship.Activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.battleship.R;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.firebase.auth.FirebaseAuth;
@@ -36,6 +37,9 @@ public class MainActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+
         usernameLabel = findViewById(R.id.usernameLabel);
         mAuth = FirebaseAuth.getInstance();
 
@@ -50,8 +54,10 @@ public class MainActivity extends AppCompatActivity {
         connectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), ConnectActivity.class);
-                startActivity(intent);
+              //  Intent intent = new Intent(getApplicationContext(), ConnectActivity.class);
+              //  startActivity(intent);
+                Intent qintent = new Intent(getApplicationContext(), GameActivity.class);
+                startActivity(qintent);
             }
         });
 

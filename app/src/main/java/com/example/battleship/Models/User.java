@@ -1,4 +1,4 @@
-package com.example.battleship;
+package com.example.battleship.Models;
 
 public class User {
     public String uid;
@@ -11,7 +11,7 @@ public class User {
         this.profileImageUrl = "";
     }
 
-    User(String uid, String username, String profileImageUrl){
+    public User(String uid, String username, String profileImageUrl){
         this.uid = uid;
         this.username = username;
         this.profileImageUrl = profileImageUrl;

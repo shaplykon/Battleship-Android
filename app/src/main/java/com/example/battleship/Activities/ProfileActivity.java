@@ -1,4 +1,4 @@
-package com.example.battleship;
+package com.example.battleship.Activities;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,6 +15,9 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import com.example.battleship.Utils.MD5Util;
+import com.example.battleship.R;
+import com.example.battleship.Models.User;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnSuccessListener;

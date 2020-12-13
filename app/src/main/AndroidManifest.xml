@@ -10,10 +10,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Battleship">
-        <activity android:name=".ConnectActivity"></activity>
-        <activity android:name=".CreateGameActivity" />
-        <activity android:name=".ProfileActivity" />
-        <activity android:name=".MainActivity">
+        <activity android:name=".Activities.GameActivity" />
+        <activity android:name=".Activities.ConnectActivity" />
+        <activity android:name=".Activities.CreateGameActivity" />
+        <activity android:name=".Activities.ProfileActivity" />
+        <activity android:name=".Activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

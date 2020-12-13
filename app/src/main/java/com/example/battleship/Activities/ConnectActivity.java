@@ -1,4 +1,4 @@
-package com.example.battleship;
+package com.example.battleship.Activities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -7,12 +7,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.facebook.drawee.view.DraweeView;
+import com.example.battleship.Models.Game;
+import com.example.battleship.R;
+import com.example.battleship.Models.User;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -21,10 +21,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
-import java.util.List;
-
-import kotlinx.coroutines.internal.ConcurrentKt;
 
 public class ConnectActivity extends AppCompatActivity {
 

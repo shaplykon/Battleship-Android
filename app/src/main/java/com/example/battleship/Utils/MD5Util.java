@@ -1,4 +1,4 @@
-package com.example.battleship;
+package com.example.battleship.Utils;
 
 import java.io.*;
 import java.security.*;
