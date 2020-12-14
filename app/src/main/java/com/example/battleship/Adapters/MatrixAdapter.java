@@ -50,14 +50,15 @@ public class MatrixAdapter extends RecyclerView.Adapter<MatrixAdapter.ViewHolder
         holder.cellImageView.setImageResource(R.drawable.square);
         if(matrix.matrix[i][j].type == Constants.SHIP_CELL){
             if(matrix.matrix[i][j].isHead){
-                holder.cellImageView.setImageResource(R.drawable.head);
+                holder.cellImageView.setBackgroundColor(R.color.black);
+         //       holder.cellImageView.setImageResource(R.drawable.head);
             }
             else{
                 holder.cellImageView.setBackgroundColor(R.color.black);
             }
         }
         if(matrix.matrix[i][j].type == Constants.NEARBY_CELL){
-            holder.cellImageView.setBackgroundColor(R.color.green);
+      //      holder.cellImageView.setBackgroundColor(R.color.green);
         }
 
 
