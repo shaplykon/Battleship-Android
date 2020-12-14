@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.battleship.Models.Matrix;
 import com.example.battleship.R;
+import com.example.battleship.Utils.Constants;
 
 
 public class MatrixAdapter extends RecyclerView.Adapter<MatrixAdapter.ViewHolder> {
@@ -41,11 +42,24 @@ public class MatrixAdapter extends RecyclerView.Adapter<MatrixAdapter.ViewHolder
         return new ViewHolder(view);
     }
 
+    @SuppressLint("ResourceAsColor")
     @Override
     public void onBindViewHolder(MatrixAdapter.ViewHolder holder, int position) {
-        int i = position % 10;
-        int j = position / 10;
+        int i = position / 10;
+        int j = position % 10;
         holder.cellImageView.setImageResource(R.drawable.square);
+        if(matrix.matrix[i][j].type == Constants.SHIP_CELL){
+            if(matrix.matrix[i][j].isHead){
+                holder.cellImageView.setImageResource(R.drawable.head);
+            }
+            else{
+                holder.cellImageView.setBackgroundColor(R.color.black);
+            }
+        }
+        if(matrix.matrix[i][j].type == Constants.NEARBY_CELL){
+            holder.cellImageView.setBackgroundColor(R.color.green);
+        }
+
 
     }
 
