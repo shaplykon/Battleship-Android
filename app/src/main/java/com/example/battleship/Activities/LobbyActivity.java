@@ -44,6 +44,7 @@ public class LobbyActivity extends AppCompatActivity implements FieldControlsFra
     FirebaseAuth mAuth;
     DatabaseReference gamesDatabaseReference;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
