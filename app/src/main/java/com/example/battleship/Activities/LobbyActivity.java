@@ -3,19 +3,25 @@ package com.example.battleship.Activities;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.example.battleship.Adapters.FieldControlsFragment;
+import com.example.battleship.Fragments.FieldControlsFragment;
 import com.example.battleship.Fragments.FieldFragment;
 import com.example.battleship.Models.Game;
 import com.example.battleship.R;
 import com.example.battleship.Models.User;
 import com.example.battleship.Utils.Constants;
+import com.example.battleship.ViewModels.GameViewModel;
+import com.example.battleship.ViewModels.GameViewModelFactory;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -24,18 +30,18 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-public class ConnectActivity extends AppCompatActivity implements FieldControlsFragment.ControlsInteractionListener {
+public class LobbyActivity extends AppCompatActivity implements FieldControlsFragment.ControlsInteractionListener {
+    FragmentManager fragmentManager;
 
-    TextView idInput;
+    GameViewModel gameViewModel;
     TextView  hostTextView;
     TextView guestTextView;
 
-    Button connectButton;
+    ImageView hostReadyImage;
+    ImageView guestReadyImage;
 
-    FragmentManager fragmentManager;
-
-    FirebaseAuth mAuth;
     FirebaseUser currentUser;
+    FirebaseAuth mAuth;
     DatabaseReference gamesDatabaseReference;
 
     @Override
@@ -43,49 +49,46 @@ public class ConnectActivity extends AppCompatActivity implements FieldControlsF
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_connect);
 
-        ProgressBar progressBar = findViewById(R.id.progressBar2);
-        hostTextView = findViewById(R.id.hostTextView);
-        guestTextView = findViewById(R.id.guestTextView);
-        idInput = findViewById(R.id.idInput);
-        connectButton = findViewById(R.id.connectButton);
-
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
 
 
+        hostReadyImage = findViewById(R.id.hostReadyImage);
+        guestReadyImage = findViewById(R.id.guestReadyImage);
+
+        hostTextView = findViewById(R.id.hostTextView);
+        guestTextView = findViewById(R.id.guestTextView);
+        Intent intent = getIntent();
+        Game game = (Game) intent.getSerializableExtra("game");
+
+        gameViewModel = new ViewModelProvider(this, new GameViewModelFactory(game)).get(GameViewModel.class);
+
+        gameViewModel.guestIsReady.observe(this, isReady -> {
+            if(isReady)
+                guestReadyImage.setImageResource(R.drawable.check);
+
+            else
+                guestReadyImage.setImageResource(R.drawable.close);
+        });
+        gameViewModel.hostIsReady.observe(this, isReady -> {
+            if(isReady)
+                hostReadyImage.setImageResource(R.drawable.check);
+
+            else
+                hostReadyImage.setImageResource(R.drawable.close);
+        });
+
 
         fragmentManager = getSupportFragmentManager();
 
-        connectButton.setOnClickListener(v -> {
-            progressBar.setVisibility(View.VISIBLE);
-            gamesDatabaseReference = FirebaseDatabase.getInstance().getReference().child("games").child(idInput.getText().toString());
-
-            gamesDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    progressBar.setVisibility(View.INVISIBLE);
-                    Game game = snapshot.getValue(Game.class);
-
-                    if(game.getHostUser() != null){
-                        showConnectionDetails(game);
-                    }
-                }
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-
-                }
-            });
-
-        });
+        showConnectionDetails(game);
     }
 
     private void showConnectionDetails(Game game){
-        game.setConnectedUser(new  User(currentUser.getUid(), currentUser.getDisplayName(), currentUser.getPhotoUrl().toString()));
-        gamesDatabaseReference.setValue(game);
         ShowField();
         ShowControls();
         hostTextView.setText(game.getHostUser().username);
-
+        guestTextView.setText(game.getConnectedUser().username);
     }
 
     @Override

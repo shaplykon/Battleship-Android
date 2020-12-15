@@ -9,7 +9,8 @@ public class Constants {
     public static final int VERTICAL = 6;
     public static final int REFRESH_ACTION = 7;
     public static final int READY_ACTION = 8;
-
+    public static final int MIN_ID = 100000;
+    public static final int MAX_ID = 1000000;
     public static final String FIELD_FRAGMENT ="FieldFragment";
 
 }

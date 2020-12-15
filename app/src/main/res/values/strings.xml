@@ -17,24 +17,21 @@
     <string name="password">Password</string>
     <string name="confirm_password">Confirm password</string>
     <string name="email">Email</string>
-    <string name="log_in">LOG IN</string>
-    <string name="don_t_have_an_account">Don\'t have an account?</string>
-    <string name="login">Login</string>
-    <string name="forgor_your_password">Forgor your password?</string>
     <string name="sign_out">Sign out</string>
-    <string name="profile">Profile</string>
     <string name="confirm">Confirm</string>
     <string name="name">Name</string>
     <string name="username">Username:</string>
     <string name="profile_image">Profile image</string>
     <string name="use_gravatar">Use Gravatar</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="refresh">Refresh</string>
     <string name="ready">Ready</string>
-    <string name="connect">Connect</string>
     <string name="connect_a_game_via_shared_id">Connect a game via shared Id</string>
     <string name="host">Host:</string>
     <string name="invite_your_friend_via_given_id">Invite your friend via given ID:</string>
-    <string name="invite_your_friend_via_given_id">Invite your friend via given ID:</string>
+    <string name="create_game">Create game</string>
+    <string name="profile">Profile</string>
+    <string name="sign_in">Sign in</string>
+    <string name="connect">Connect</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

@@ -2,7 +2,9 @@ package com.example.battleship.Models;
 
 import com.example.battleship.Utils.Constants;
 
-public class Cell {
+import java.io.Serializable;
+
+public class Cell implements Serializable {
     int rotation; // horizontal or vertical
     public int type;
     public boolean isHead;

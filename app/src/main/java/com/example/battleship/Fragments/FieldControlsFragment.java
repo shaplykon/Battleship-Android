@@ -1,4 +1,4 @@
-package com.example.battleship.Adapters;
+package com.example.battleship.Fragments;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -28,7 +28,6 @@ public class FieldControlsFragment extends Fragment {
 
     public interface ControlsInteractionListener{
         void controlInteraction(int action);
-
     }
 
     @Override
@@ -46,12 +45,7 @@ public class FieldControlsFragment extends Fragment {
         refreshButton = view.findViewById(R.id.refreshButton);
         readyButton = view.findViewById(R.id.readyButton);
 
-        refreshButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                controlsInteractionListener.controlInteraction(Constants.REFRESH_ACTION);
-            }
-        });
+        refreshButton.setOnClickListener(v -> controlsInteractionListener.controlInteraction(Constants.REFRESH_ACTION));
 
         return view;
     }

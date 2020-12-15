@@ -5,7 +5,6 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +15,7 @@ import android.widget.TextView;
 import com.example.battleship.Models.Game;
 import com.example.battleship.Models.User;
 import com.example.battleship.R;
+import com.example.battleship.Utils.Constants;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -23,13 +23,17 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-public class CreateDialogFragment extends DialogFragment {
+public class CreateGameFragment extends DialogFragment {
     TextView gameIdTextView;
     ProgressBar progressBar;
-    int MIN_ID = 100000;
-    int MAX_ID = 1000000;
+
     User hostUser;
     String gameId;
+
+    DatabaseReference usersDatabaseReference;
+    DatabaseReference gameDatabaseReference;
+    ValueEventListener gameEventListener;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,10 +47,10 @@ public class CreateDialogFragment extends DialogFragment {
         View view = inflater.inflate(R.layout.fragment_create_dialog, container, false);
         String hostUid = FirebaseAuth.getInstance().getUid();
         gameIdTextView = view.findViewById(R.id.gameIdTextView);
-        gameId = String.valueOf((int)((Math.random() * ((MAX_ID - MIN_ID) + 1)) + MIN_ID));
+        gameId = String.valueOf((int)((Math.random() * ((Constants.MAX_ID - Constants.MIN_ID) + 1)) + Constants.MIN_ID));
 
-        DatabaseReference usersDatabaseReference = FirebaseDatabase.getInstance().getReference().child("users").child(hostUid);
-        DatabaseReference gamesDatabaseReference = FirebaseDatabase.getInstance().getReference("/games/" + gameId);
+        usersDatabaseReference = FirebaseDatabase.getInstance().getReference().child("users").child(hostUid);
+        gameDatabaseReference = FirebaseDatabase.getInstance().getReference("/games/" + gameId);
 
         progressBar = view.findViewById(R.id.progressBar);
 
@@ -56,7 +60,26 @@ public class CreateDialogFragment extends DialogFragment {
                 hostUser = snapshot.getValue(User.class);
                 gameIdTextView.setText(gameId);
                 Game game = new Game(hostUser, gameId);
-                gamesDatabaseReference.setValue(game);
+                gameDatabaseReference.setValue(game);
+                WaitGuestConnection();
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+        return view;
+    }
+
+    private void WaitGuestConnection(){
+        gameEventListener = gameDatabaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Game game = snapshot.getValue(Game.class);
+                if(game.getConnectedUser() != null){
+
+
+                }
             }
 
             @Override
@@ -64,7 +87,7 @@ public class CreateDialogFragment extends DialogFragment {
 
             }
         });
-        return view;
+
     }
 
     @Override
@@ -80,7 +103,7 @@ public class CreateDialogFragment extends DialogFragment {
     }
 
     private void DeleteGame(){
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("games").child(gameId);
-        databaseReference.removeValue();
+        gameDatabaseReference.removeEventListener(gameEventListener);
+        gameDatabaseReference.removeValue();
     }
 }

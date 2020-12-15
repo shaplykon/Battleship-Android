@@ -14,7 +14,7 @@
             android:name=".Activities.GameActivity"
             android:screenOrientation="landscape"
             />
-        <activity android:name=".Activities.ConnectActivity" />
+        <activity android:name=".Activities.LobbyActivity" />
         <activity android:name=".Activities.ProfileActivity" />
         <activity android:name=".Activities.MainActivity">
             <intent-filter>

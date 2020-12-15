@@ -1,6 +1,8 @@
 package com.example.battleship.Models;
 
-public class User {
+import java.io.Serializable;
+
+public class User implements Serializable {
     public String uid;
     public String username;
     public String profileImageUrl;
