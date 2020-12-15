@@ -1,5 +1,6 @@
 package com.example.battleship.Fragments;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 
@@ -10,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Switch;
 
 import com.example.battleship.R;
 import com.example.battleship.Utils.Constants;
@@ -18,7 +20,8 @@ public class FieldControlsFragment extends Fragment {
 
     ControlsInteractionListener controlsInteractionListener;
     Button refreshButton;
-    Button readyButton;
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
+    Switch readySwitch;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -27,7 +30,7 @@ public class FieldControlsFragment extends Fragment {
     }
 
     public interface ControlsInteractionListener{
-        void controlInteraction(int action);
+        void controlInteraction(int action, Boolean value);
     }
 
     @Override
@@ -41,12 +44,10 @@ public class FieldControlsFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_field_controls, container, false);
-
         refreshButton = view.findViewById(R.id.refreshButton);
-        readyButton = view.findViewById(R.id.readyButton);
-
-        refreshButton.setOnClickListener(v -> controlsInteractionListener.controlInteraction(Constants.REFRESH_ACTION));
-
+        readySwitch = view.findViewById(R.id.readySwitch);
+        refreshButton.setOnClickListener(v -> controlsInteractionListener.controlInteraction(Constants.REFRESH_ACTION, null));
+        readySwitch.setOnCheckedChangeListener((buttonView, isChecked) -> controlsInteractionListener.controlInteraction(Constants.READY_ACTION, isChecked));
         return view;
     }
 }

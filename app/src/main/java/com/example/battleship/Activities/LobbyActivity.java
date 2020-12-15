@@ -40,10 +40,12 @@ public class LobbyActivity extends AppCompatActivity implements FieldControlsFra
     ImageView hostReadyImage;
     ImageView guestReadyImage;
 
+    Button readyButton;
+
     FirebaseUser currentUser;
     FirebaseAuth mAuth;
     DatabaseReference gamesDatabaseReference;
-
+    boolean isHost;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +55,6 @@ public class LobbyActivity extends AppCompatActivity implements FieldControlsFra
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
 
-
         hostReadyImage = findViewById(R.id.hostReadyImage);
         guestReadyImage = findViewById(R.id.guestReadyImage);
 
@@ -61,6 +62,9 @@ public class LobbyActivity extends AppCompatActivity implements FieldControlsFra
         guestTextView = findViewById(R.id.guestTextView);
         Intent intent = getIntent();
         Game game = (Game) intent.getSerializableExtra("game");
+
+        isHost = currentUser.getDisplayName().equals(game.getHostUser().username);
+
 
         gameViewModel = new ViewModelProvider(this, new GameViewModelFactory(game)).get(GameViewModel.class);
 
@@ -80,6 +84,7 @@ public class LobbyActivity extends AppCompatActivity implements FieldControlsFra
         });
 
 
+
         fragmentManager = getSupportFragmentManager();
 
         showConnectionDetails(game);
@@ -93,10 +98,17 @@ public class LobbyActivity extends AppCompatActivity implements FieldControlsFra
     }
 
     @Override
-    public void controlInteraction(int action) {
+    public void controlInteraction(int action, Boolean value) {
         if (action == Constants.REFRESH_ACTION) {
             HideField();
             ShowField();
+        }
+        if(action == Constants.READY_ACTION) {
+            if (isHost)
+                gameViewModel.hostIsReady.setValue(value);
+
+            else
+                gameViewModel.guestIsReady.setValue(value);
         }
     }
 
