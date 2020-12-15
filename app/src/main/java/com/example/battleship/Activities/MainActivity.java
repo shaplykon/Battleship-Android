@@ -1,6 +1,7 @@
 package com.example.battleship.Activities;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.DialogFragment;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -10,6 +11,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.battleship.Fragments.CreateDialogFragment;
 import com.example.battleship.R;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
@@ -42,8 +44,10 @@ public class MainActivity extends AppCompatActivity {
         createGameButton = findViewById(R.id.createGameButton);
 
         createGameButton.setOnClickListener(v -> {
-            Intent intent = new Intent(getApplicationContext(), CreateGameActivity.class);
-            startActivity(intent);
+            DialogFragment createGameFragment = new CreateDialogFragment();
+            createGameFragment.show(getSupportFragmentManager(), "createGameFragment");
+            //Intent intent = new Intent(getApplicationContext(), CreateGameActivity.class);
+            //startActivity(intent);
         });
 
         connectButton.setOnClickListener(new View.OnClickListener() {

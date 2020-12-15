@@ -15,7 +15,6 @@
             android:screenOrientation="landscape"
             />
         <activity android:name=".Activities.ConnectActivity" />
-        <activity android:name=".Activities.CreateGameActivity" />
         <activity android:name=".Activities.ProfileActivity" />
         <activity android:name=".Activities.MainActivity">
             <intent-filter>

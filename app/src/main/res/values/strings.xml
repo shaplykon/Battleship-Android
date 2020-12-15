@@ -35,4 +35,6 @@
     <string name="connect">Connect</string>
     <string name="connect_a_game_via_shared_id">Connect a game via shared Id</string>
     <string name="host">Host:</string>
+    <string name="invite_your_friend_via_given_id">Invite your friend via given ID:</string>
+    <string name="invite_your_friend_via_given_id">Invite your friend via given ID:</string>
 </resources>
