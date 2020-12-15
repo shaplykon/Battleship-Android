@@ -49,10 +49,10 @@ public class MainActivity extends AppCompatActivity {
         connectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Intent intent = new Intent(getApplicationContext(), ConnectActivity.class);
-                //startActivity(intent);
-                Intent intent = new Intent(getApplicationContext(), GameActivity.class);
+                Intent intent = new Intent(getApplicationContext(), ConnectActivity.class);
                 startActivity(intent);
+                //Intent intent = new Intent(getApplicationContext(), GameActivity.class);
+                //startActivity(intent);
             }
         });
 

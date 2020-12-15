@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Game {
-    public User hostUser;
-    public User connectedUser;
+    private User hostUser;
+    private User connectedUser;
 
-    public List<ArrayList<Integer>> secondPlayerField;
-    public String gameId;
+    private Cell[][] hostMatrix;
+    private Cell[][] connectedMatrix;
+    private String gameId;
 
     public  Game(){
 
@@ -17,9 +18,24 @@ public class Game {
     public Game(User hostUser, String gameId){
         this.hostUser = hostUser;
         this.gameId = gameId;
-        //this.firstPlayerField = new int[10][10];
-        //this.secondPlayerField = new int[10][10];
     }
+
+    public User getHostUser(){
+        return hostUser;
+    }
+
+    public User getConnectedUser(){
+        return connectedUser;
+    }
+
+    public String getGameId(){
+        return gameId;
+    }
+
+    public void setConnectedUser(User connectedUser){
+        this.connectedUser = connectedUser;
+    }
+
 }
 
 

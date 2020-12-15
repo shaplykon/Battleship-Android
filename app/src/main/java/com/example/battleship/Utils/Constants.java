@@ -7,5 +7,9 @@ public class Constants {
     public static final int NEARBY_CELL = 4;
     public static final int HORIZONTAL = 5;
     public static final int VERTICAL = 6;
-    public static final String UNDEFINED = "undefined";
+    public static final int REFRESH_ACTION = 7;
+    public static final int READY_ACTION = 8;
+
+    public static final String FIELD_FRAGMENT ="FieldFragment";
+
 }

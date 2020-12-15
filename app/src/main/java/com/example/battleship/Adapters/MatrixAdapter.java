@@ -80,7 +80,7 @@ public class MatrixAdapter extends RecyclerView.Adapter<MatrixAdapter.ViewHolder
                 @SuppressLint("ResourceAsColor")
                 @Override
                 public void onClick(View v) {
-                    v.setBackgroundColor(R.color.colorAccent);
+                    //v.setBackgroundColor(R.color.colorAccent);
                 }
             });
         }

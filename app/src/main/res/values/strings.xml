@@ -28,4 +28,11 @@
     <string name="username">Username:</string>
     <string name="profile_image">Profile image</string>
     <string name="use_gravatar">Use Gravatar</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="refresh">Refresh</string>
+    <string name="ready">Ready</string>
+    <string name="connect">Connect</string>
+    <string name="connect_a_game_via_shared_id">Connect a game via shared Id</string>
+    <string name="host">Host:</string>
 </resources>
