@@ -15,7 +15,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
-import com.example.battleship.Utils.MD5Util;
+import com.example.battleship.Utils.HexUtil;
 import com.example.battleship.R;
 import com.example.battleship.Models.User;
 import com.facebook.drawee.view.SimpleDraweeView;
@@ -119,17 +119,9 @@ public class ProfileActivity extends AppCompatActivity {
         StorageReference reference =  FirebaseStorage.getInstance().getReference("/images/" + filename);
 
 
-        reference.putFile(selectedPhotoUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                reference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        saveChangesToFirebaseDatabase(uri);
-                    }
-                });
-            }
-        });
+        reference.putFile(selectedPhotoUri).addOnSuccessListener(
+                taskSnapshot -> reference.getDownloadUrl().addOnSuccessListener(
+                        this::saveChangesToFirebaseDatabase));
     }
 
     private void saveChangesToFirebaseDatabase(Uri profileImageUri) {
@@ -137,16 +129,13 @@ public class ProfileActivity extends AppCompatActivity {
             String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
             DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("/users/" + uid);
             User user = new User(uid, usernameEdit.getText().toString(), profileImageUri.toString());
-            databaseReference.setValue(user).addOnSuccessListener(new OnSuccessListener<Void>() {
-                @Override
-                public void onSuccess(Void aVoid) {
-                    Log.d("ProfileActivity", "Changes saved to database");
-                    UserProfileChangeRequest changeRequest = new UserProfileChangeRequest.Builder()
-                            .setDisplayName(user.username)
-                            .setPhotoUri(profileImageUri)
-                            .build();
-                    currentUser.updateProfile(changeRequest);
-                }
+            databaseReference.setValue(user).addOnSuccessListener(aVoid -> {
+                Log.d("ProfileActivity", "Changes saved to database");
+                UserProfileChangeRequest changeRequest = new UserProfileChangeRequest.Builder()
+                        .setDisplayName(user.username)
+                        .setPhotoUri(profileImageUri)
+                        .build();
+                currentUser.updateProfile(changeRequest);
             });
         }
     }
@@ -166,7 +155,7 @@ public class ProfileActivity extends AppCompatActivity {
         if (isGravatarUsed) {
             String email = currentUser.getEmail();
             assert email != null;
-            String hash = MD5Util.md5Hex(email.trim().toLowerCase());
+            String hash = HexUtil.md5Hex(email.trim().toLowerCase());
             profileImageUri = Uri.parse("https://www.gravatar.com/avatar/" + hash + "?size=256");
         } else {
             if (currentUser.getPhotoUrl() != null) {

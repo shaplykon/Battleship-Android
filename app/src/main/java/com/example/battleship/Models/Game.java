@@ -1,12 +1,8 @@
 package com.example.battleship.Models;
 
-import android.os.Parcelable;
-
 import com.example.battleship.Utils.Constants;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Game implements Serializable {
     private User hostUser;

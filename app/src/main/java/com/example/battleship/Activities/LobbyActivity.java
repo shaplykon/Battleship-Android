@@ -1,25 +1,19 @@
 package com.example.battleship.Activities;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.battleship.Fragments.FieldControlsFragment;
 import com.example.battleship.Fragments.FieldFragment;
 import com.example.battleship.Models.Game;
+import com.example.battleship.Models.Matrix;
 import com.example.battleship.R;
-import com.example.battleship.Models.User;
 import com.example.battleship.Utils.Constants;
 import com.example.battleship.ViewModels.GameViewModel;
 import com.example.battleship.ViewModels.GameViewModelFactory;
@@ -33,7 +27,9 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.Objects;
 
-public class LobbyActivity extends AppCompatActivity implements FieldControlsFragment.ControlsInteractionListener {
+public class LobbyActivity extends AppCompatActivity implements
+        FieldControlsFragment.ControlsInteractionListener,
+        FieldFragment.OnFieldChangedListener {
     FirebaseUser currentUser;
     FirebaseAuth mAuth;
 
@@ -54,7 +50,6 @@ public class LobbyActivity extends AppCompatActivity implements FieldControlsFra
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_connect);
-
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
 
@@ -70,8 +65,10 @@ public class LobbyActivity extends AppCompatActivity implements FieldControlsFra
         isHost = Objects.equals(currentUser.getDisplayName(), game.getHostUser().username);
 
         gameViewModel = new ViewModelProvider(this, new GameViewModelFactory(game)).get(GameViewModel.class);
+        gameViewModel.SetOpponentMatrix();
+
         gamesDatabaseReference = FirebaseDatabase.getInstance().getReference().child("games").
-                child(gameViewModel.gameId.getValue());
+                child(Objects.requireNonNull(gameViewModel.gameId.getValue()));
 
         gameViewModel.guestIsReady.observe(this, isReady -> {
             if (isReady) {
@@ -92,8 +89,6 @@ public class LobbyActivity extends AppCompatActivity implements FieldControlsFra
             }
         });
 
-
-
         if(isHost){
             gamesDatabaseReference.child("guestReady").addValueEventListener(new ValueEventListener() {
                 @Override
@@ -105,9 +100,8 @@ public class LobbyActivity extends AppCompatActivity implements FieldControlsFra
 
                 }
             });
-            gameViewModel.gameState.observe(this, gameState -> {
-                gamesDatabaseReference.child("gameState").setValue(gameState);
-            });
+            gameViewModel.gameState.observe(this, gameState ->
+                    gamesDatabaseReference.child("gameState").setValue(gameState));
         }
         else{
             gamesDatabaseReference.child("hostReady").addValueEventListener(new ValueEventListener() {
@@ -121,10 +115,12 @@ public class LobbyActivity extends AppCompatActivity implements FieldControlsFra
                 }
             });
         }
+
         gamesDatabaseReference.child("gameState").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 String gameState = snapshot.getValue(String.class);
+                assert gameState != null;
                 if(gameState.equals(Constants.ACTIVE_STATE)){
                     Intent intent1 = new Intent(getApplicationContext(), GameActivity.class);
                     startActivity(intent1);
@@ -135,7 +131,6 @@ public class LobbyActivity extends AppCompatActivity implements FieldControlsFra
 
             }
         });
-
         fragmentManager = getSupportFragmentManager();
         ShowConnectionDetails(game);
     }
@@ -175,6 +170,7 @@ public class LobbyActivity extends AppCompatActivity implements FieldControlsFra
     }
     private void HideField(){
         FieldFragment fieldFragment = (FieldFragment) fragmentManager.findFragmentByTag(Constants.FIELD_FRAGMENT);
+        assert fieldFragment != null;
         getSupportFragmentManager().beginTransaction()
                 .setCustomAnimations(R.anim.fui_slide_in_right, R.anim.fui_slide_out_left)
                 .remove(fieldFragment)
@@ -185,5 +181,10 @@ public class LobbyActivity extends AppCompatActivity implements FieldControlsFra
                 .setCustomAnimations(R.anim.fui_slide_in_right, R.anim.fui_slide_out_left)
                 .add(R.id.controlsContainer, new FieldControlsFragment())
                 .commit();
+    }
+
+    @Override
+    public void OnFieldChanged(Matrix matrix) {
+        gameViewModel.SetPlayerMatrix(matrix);
     }
 }

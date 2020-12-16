@@ -39,7 +39,6 @@ public class CreateGameFragment extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     @Override
@@ -78,10 +77,11 @@ public class CreateGameFragment extends DialogFragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Game game = snapshot.getValue(Game.class);
-                if(game.getConnectedUser() != null){
+                if (game.getConnectedUser() != null) {
                     Intent intent = new Intent(getContext(), LobbyActivity.class);
                     intent.putExtra("game", game);
-                    startActivity(intent);           }
+                    startActivity(intent);
+                }
             }
 
             @Override
@@ -89,7 +89,6 @@ public class CreateGameFragment extends DialogFragment {
 
             }
         });
-
     }
 
     @Override

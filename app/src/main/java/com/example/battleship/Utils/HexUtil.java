@@ -3,7 +3,7 @@ package com.example.battleship.Utils;
 import java.io.*;
 import java.security.*;
 
-public class MD5Util {
+public class HexUtil {
     public static String hex(byte[] array) {
         StringBuilder sb = new StringBuilder();
         for (byte b : array) {

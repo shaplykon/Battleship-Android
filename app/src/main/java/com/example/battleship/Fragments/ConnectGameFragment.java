@@ -1,5 +1,6 @@
 package com.example.battleship.Fragments;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -7,12 +8,14 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.battleship.Activities.LobbyActivity;
 import com.example.battleship.Models.Game;
@@ -42,7 +45,6 @@ public class ConnectGameFragment extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     @Override
@@ -61,28 +63,37 @@ public class ConnectGameFragment extends DialogFragment {
         connectButton.setOnClickListener(v -> {
             progressBar.setVisibility(View.VISIBLE);
             gamesDatabaseReference = FirebaseDatabase.getInstance().getReference().child("games").child(idInput.getText().toString());
-
             gamesDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                @SuppressLint("ShowToast")
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     progressBar.setVisibility(View.INVISIBLE);
                     Game game = snapshot.getValue(Game.class);
-                    if(game.getHostUser() != null){
-                        game.setConnectedUser(new User(currentUser.getUid(), currentUser.getDisplayName(), currentUser.getPhotoUrl().toString()));
-                        gamesDatabaseReference.setValue(game);
-                        Intent intent = new Intent(getContext(), LobbyActivity.class);
-                        intent.putExtra("game", game);
-                        startActivity(intent);
+                    if (game != null)
+                        EstablishGameConnection(game);
+                    else {
+                        Toast toast = Toast.makeText(getContext(), "Game with such ID was not found", Toast.LENGTH_SHORT);
+                        toast.setGravity(Gravity.TOP, 0, 160);
+                        toast.show();
                     }
                 }
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) {
-
                 }
             });
 
         });
 
         return view;
+    }
+
+    private void EstablishGameConnection(Game game){
+        if (game.getHostUser() != null) {
+            game.setConnectedUser(new User(currentUser.getUid(), currentUser.getDisplayName(), currentUser.getPhotoUrl().toString()));
+            gamesDatabaseReference.setValue(game);
+            Intent intent = new Intent(getContext(), LobbyActivity.class);
+            intent.putExtra("game", game);
+            startActivity(intent);
+        }
     }
 }

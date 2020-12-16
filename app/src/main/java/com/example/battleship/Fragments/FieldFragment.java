@@ -1,7 +1,9 @@
 package com.example.battleship.Fragments;
 
+import android.content.Context;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -15,22 +17,18 @@ import com.example.battleship.Models.Matrix;
 import com.example.battleship.R;
 
 public class FieldFragment extends Fragment {
+    OnFieldChangedListener mOnFieldChangedListener;
     RecyclerView recyclerView;
-
-    public FieldFragment() {
-
-    }
-
-    public static FieldFragment newInstance() {
-        FieldFragment fragment = new FieldFragment();
-
-        return fragment;
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
 
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        mOnFieldChangedListener = (OnFieldChangedListener) context;
     }
 
     @Override
@@ -40,9 +38,16 @@ public class FieldFragment extends Fragment {
         recyclerView = view.findViewById(R.id.playerRecyclerView);
 
         Matrix matrix = new Matrix();
+        matrix.GenerateMatrix();
+
+        mOnFieldChangedListener.OnFieldChanged(matrix);
         MatrixAdapter adapter = new MatrixAdapter(getContext(), matrix);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(),10));
         return view;
+    }
+
+    public interface OnFieldChangedListener{
+        void OnFieldChanged(Matrix matrix);
     }
 }
