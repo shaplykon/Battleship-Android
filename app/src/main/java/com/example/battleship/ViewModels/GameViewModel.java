@@ -13,13 +13,19 @@ public class GameViewModel extends ViewModel {
     public MutableLiveData<Matrix> opponentMatrix;
     public MutableLiveData<Boolean> hostIsReady;
     public MutableLiveData<Boolean> guestIsReady;
+    public MutableLiveData<String> gameId;
+    public MutableLiveData<String> gameState;
 
     public GameViewModel(Game game) {
         this.hostId = new MutableLiveData<>();
         this.guestId = new MutableLiveData<>();
         this.hostIsReady = new MutableLiveData<>();
         this.guestIsReady = new MutableLiveData<>();
+        this.gameId = new MutableLiveData<>();
+        this.gameState = new MutableLiveData<>();
 
+        this.gameState.setValue(game.getGameState());
+        this.gameId.setValue(game.getGameId());
         this.hostId.setValue(game.getHostUser().uid);
         this.guestId.setValue(game.getConnectedUser().uid);
         this.hostIsReady.setValue(false);

@@ -71,7 +71,7 @@ public class ConnectGameFragment extends DialogFragment {
                         game.setConnectedUser(new User(currentUser.getUid(), currentUser.getDisplayName(), currentUser.getPhotoUrl().toString()));
                         gamesDatabaseReference.setValue(game);
                         Intent intent = new Intent(getContext(), LobbyActivity.class);
-                        intent.putExtra("game", (Game)game);
+                        intent.putExtra("game", game);
                         startActivity(intent);
                     }
                 }

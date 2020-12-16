@@ -3,6 +3,7 @@ package com.example.battleship.Activities;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -30,21 +31,23 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.Objects;
+
 public class LobbyActivity extends AppCompatActivity implements FieldControlsFragment.ControlsInteractionListener {
+    FirebaseUser currentUser;
+    FirebaseAuth mAuth;
+
     FragmentManager fragmentManager;
 
+    DatabaseReference gamesDatabaseReference;
     GameViewModel gameViewModel;
+
     TextView  hostTextView;
     TextView guestTextView;
 
     ImageView hostReadyImage;
     ImageView guestReadyImage;
 
-    Button readyButton;
-
-    FirebaseUser currentUser;
-    FirebaseAuth mAuth;
-    DatabaseReference gamesDatabaseReference;
     boolean isHost;
 
     @Override
@@ -60,65 +63,116 @@ public class LobbyActivity extends AppCompatActivity implements FieldControlsFra
 
         hostTextView = findViewById(R.id.hostTextView);
         guestTextView = findViewById(R.id.guestTextView);
+
         Intent intent = getIntent();
         Game game = (Game) intent.getSerializableExtra("game");
 
-        isHost = currentUser.getDisplayName().equals(game.getHostUser().username);
-
+        isHost = Objects.equals(currentUser.getDisplayName(), game.getHostUser().username);
 
         gameViewModel = new ViewModelProvider(this, new GameViewModelFactory(game)).get(GameViewModel.class);
+        gamesDatabaseReference = FirebaseDatabase.getInstance().getReference().child("games").
+                child(gameViewModel.gameId.getValue());
 
         gameViewModel.guestIsReady.observe(this, isReady -> {
-            if(isReady)
+            if (isReady) {
                 guestReadyImage.setImageResource(R.drawable.check);
-
-            else
+                if (isHost)
+                    CheckReadiness();
+            } else
                 guestReadyImage.setImageResource(R.drawable.close);
         });
         gameViewModel.hostIsReady.observe(this, isReady -> {
-            if(isReady)
+            if(isReady) {
                 hostReadyImage.setImageResource(R.drawable.check);
-
-            else
+                if(isHost){
+                    CheckReadiness();
+                }
+            }else{
                 hostReadyImage.setImageResource(R.drawable.close);
+            }
         });
 
 
 
-        fragmentManager = getSupportFragmentManager();
+        if(isHost){
+            gamesDatabaseReference.child("guestReady").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    gameViewModel.guestIsReady.setValue(snapshot.getValue(Boolean.class));
+                }
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
 
-        showConnectionDetails(game);
+                }
+            });
+            gameViewModel.gameState.observe(this, gameState -> {
+                gamesDatabaseReference.child("gameState").setValue(gameState);
+            });
+        }
+        else{
+            gamesDatabaseReference.child("hostReady").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    gameViewModel.hostIsReady.setValue(snapshot.getValue(Boolean.class));
+                }
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+        }
+        gamesDatabaseReference.child("gameState").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String gameState = snapshot.getValue(String.class);
+                if(gameState.equals(Constants.ACTIVE_STATE)){
+                    Intent intent1 = new Intent(getApplicationContext(), GameActivity.class);
+                    startActivity(intent1);
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+        fragmentManager = getSupportFragmentManager();
+        ShowConnectionDetails(game);
     }
 
-    private void showConnectionDetails(Game game){
+    private void CheckReadiness(){
+        if(gameViewModel.hostIsReady.getValue() && gameViewModel.guestIsReady.getValue()){
+            gameViewModel.gameState.setValue(Constants.ACTIVE_STATE);
+        }
+    }
+    private void ShowConnectionDetails(Game game){
         ShowField();
         ShowControls();
         hostTextView.setText(game.getHostUser().username);
         guestTextView.setText(game.getConnectedUser().username);
     }
-
     @Override
-    public void controlInteraction(int action, Boolean value) {
+    public void ControlInteraction(int action, Boolean value) {
         if (action == Constants.REFRESH_ACTION) {
             HideField();
             ShowField();
         }
-        if(action == Constants.READY_ACTION) {
-            if (isHost)
+        if (action == Constants.READY_ACTION) {
+            if (isHost) {
+                gamesDatabaseReference.child("hostReady").setValue(value);
                 gameViewModel.hostIsReady.setValue(value);
-
-            else
+            } else {
+                gamesDatabaseReference.child("guestReady").setValue(value);
                 gameViewModel.guestIsReady.setValue(value);
+            }
         }
     }
-
     private void ShowField(){
         getSupportFragmentManager().beginTransaction()
                 .setCustomAnimations(R.anim.fui_slide_in_right, R.anim.fui_slide_out_left)
                 .add(R.id.fieldContainer, new FieldFragment(), Constants.FIELD_FRAGMENT)
                 .commit();
     }
-
     private void HideField(){
         FieldFragment fieldFragment = (FieldFragment) fragmentManager.findFragmentByTag(Constants.FIELD_FRAGMENT);
         getSupportFragmentManager().beginTransaction()
@@ -132,5 +186,4 @@ public class LobbyActivity extends AppCompatActivity implements FieldControlsFra
                 .add(R.id.controlsContainer, new FieldControlsFragment())
                 .commit();
     }
-
 }

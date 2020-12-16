@@ -30,7 +30,7 @@ public class FieldControlsFragment extends Fragment {
     }
 
     public interface ControlsInteractionListener{
-        void controlInteraction(int action, Boolean value);
+        void ControlInteraction(int action, Boolean value);
     }
 
     @Override
@@ -46,8 +46,8 @@ public class FieldControlsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_field_controls, container, false);
         refreshButton = view.findViewById(R.id.refreshButton);
         readySwitch = view.findViewById(R.id.readySwitch);
-        refreshButton.setOnClickListener(v -> controlsInteractionListener.controlInteraction(Constants.REFRESH_ACTION, null));
-        readySwitch.setOnCheckedChangeListener((buttonView, isChecked) -> controlsInteractionListener.controlInteraction(Constants.READY_ACTION, isChecked));
+        refreshButton.setOnClickListener(v -> controlsInteractionListener.ControlInteraction(Constants.REFRESH_ACTION, null));
+        readySwitch.setOnCheckedChangeListener((buttonView, isChecked) -> controlsInteractionListener.ControlInteraction(Constants.READY_ACTION, isChecked));
         return view;
     }
 }

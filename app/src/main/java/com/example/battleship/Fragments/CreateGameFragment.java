@@ -1,6 +1,7 @@
 package com.example.battleship.Fragments;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -12,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.example.battleship.Activities.LobbyActivity;
 import com.example.battleship.Models.Game;
 import com.example.battleship.Models.User;
 import com.example.battleship.R;
@@ -77,9 +79,9 @@ public class CreateGameFragment extends DialogFragment {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Game game = snapshot.getValue(Game.class);
                 if(game.getConnectedUser() != null){
-
-
-                }
+                    Intent intent = new Intent(getContext(), LobbyActivity.class);
+                    intent.putExtra("game", game);
+                    startActivity(intent);           }
             }
 
             @Override
