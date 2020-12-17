@@ -65,7 +65,6 @@ public class LobbyActivity extends AppCompatActivity implements
         isHost = Objects.equals(currentUser.getDisplayName(), game.getHostUser().username);
 
         gameViewModel = new ViewModelProvider(this, new GameViewModelFactory(game)).get(GameViewModel.class);
-        gameViewModel.SetOpponentMatrix();
 
         gamesDatabaseReference = FirebaseDatabase.getInstance().getReference().child("games").
                 child(Objects.requireNonNull(gameViewModel.gameId.getValue()));
@@ -122,8 +121,7 @@ public class LobbyActivity extends AppCompatActivity implements
                 String gameState = snapshot.getValue(String.class);
                 assert gameState != null;
                 if(gameState.equals(Constants.ACTIVE_STATE)){
-                    Intent intent1 = new Intent(getApplicationContext(), GameActivity.class);
-                    startActivity(intent1);
+                    StartGame();
                 }
             }
             @Override
@@ -181,6 +179,13 @@ public class LobbyActivity extends AppCompatActivity implements
                 .setCustomAnimations(R.anim.fui_slide_in_right, R.anim.fui_slide_out_left)
                 .add(R.id.controlsContainer, new FieldControlsFragment())
                 .commit();
+    }
+    private void StartGame(){
+        Intent intent = new Intent(getApplicationContext(), GameActivity.class);
+        gameViewModel.SetOpponentMatrix();
+        Game game = gameViewModel.GetGameInstance();
+        intent.putExtra(Constants.GAME_EXTRA, game);
+        startActivity(intent);
     }
 
     @Override

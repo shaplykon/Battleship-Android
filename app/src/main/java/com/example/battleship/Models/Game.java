@@ -7,12 +7,25 @@ import java.io.Serializable;
 public class Game implements Serializable {
     private User hostUser;
     private User connectedUser;
-    private Matrix hostMatrix;
-    private Matrix connectedMatrix;
+    private Matrix playerMatrix;
+    private Matrix opponentMatrix;
     private String gameState;
     private String gameId;
     private boolean hostReady;
     private boolean guestReady;
+
+    public Game(User hostUser, User connectedUser, Matrix hostMatrix, Matrix connectedMatrix,
+                String gameState, String gameId, boolean hostReady, boolean guestReady) {
+        this.hostUser = hostUser;
+        this.connectedUser = connectedUser;
+        this.playerMatrix = hostMatrix;
+        this.opponentMatrix = connectedMatrix;
+        this.gameState = gameState;
+        this.gameId = gameId;
+        this.hostReady = hostReady;
+        this.guestReady = guestReady;
+    }
+
 
     public String getGameState() {
         return gameState;
@@ -50,13 +63,13 @@ public class Game implements Serializable {
         this.gameState = Constants.WAITING_STATE;
     }
 
-    public Matrix getHostMatrix(){
-        return hostMatrix;
+    public Matrix getPlayerMatrix(){
+        return playerMatrix;
     }
 
-    public Matrix getConnectedMatrix()
+    public Matrix getOpponentMatrix()
     {
-        return  connectedMatrix;
+        return  opponentMatrix;
     }
 
     public User getHostUser(){

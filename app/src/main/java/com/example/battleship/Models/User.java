@@ -1,5 +1,14 @@
 package com.example.battleship.Models;
 
+import androidx.annotation.NonNull;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import java.io.Serializable;
 
 public class User implements Serializable {
@@ -7,7 +16,7 @@ public class User implements Serializable {
     public String username;
     public String profileImageUrl;
 
-    User(){
+    public User(){
         this.uid = "";
         this.username = "";
         this.profileImageUrl = "";
@@ -18,4 +27,6 @@ public class User implements Serializable {
         this.username = username;
         this.profileImageUrl = profileImageUrl;
     }
+
+
 }

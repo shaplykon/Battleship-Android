@@ -1,13 +1,21 @@
 package com.example.battleship.Models;
 import com.example.battleship.Utils.Constants;
+
+import java.io.Serializable;
 import java.util.Random;
 
-public class Matrix {
+public class Matrix implements Serializable {
     private final int[] array = {4, 3, 3, 2, 2, 2, 1, 1, 1,1};
     public Cell[][] matrix;
 
     public Matrix() {
-        matrix = new Cell[10][10];
+        this.matrix = new Cell[10][10];
+
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                this.matrix[i][j] = new Cell();
+            }
+        }
     }
 
     public void GenerateMatrix() {
