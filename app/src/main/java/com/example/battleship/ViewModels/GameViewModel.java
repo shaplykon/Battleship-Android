@@ -6,12 +6,10 @@ import androidx.lifecycle.ViewModel;
 import com.example.battleship.Models.Game;
 import com.example.battleship.Models.Matrix;
 import com.example.battleship.Models.User;
-import com.example.battleship.Repositories.FirebaseUserCallback;
-import com.example.battleship.Repositories.UserRepository;
 
 public class GameViewModel extends ViewModel {
-    public MutableLiveData<String> hostId;
-    public MutableLiveData<String> guestId;
+    public MutableLiveData<User> hostUser;
+    public MutableLiveData<User> guestUser;
     public MutableLiveData<Matrix> playerMatrix;
     public MutableLiveData<Matrix> opponentMatrix;
     public MutableLiveData<Boolean> hostIsReady;
@@ -20,8 +18,8 @@ public class GameViewModel extends ViewModel {
     public MutableLiveData<String> gameState;
 
     public GameViewModel(Game game) {
-        this.hostId = new MutableLiveData<>();
-        this.guestId = new MutableLiveData<>();
+        this.hostUser = new MutableLiveData<>();
+        this.guestUser = new MutableLiveData<>();
         this.hostIsReady = new MutableLiveData<>();
         this.guestIsReady = new MutableLiveData<>();
         this.gameId = new MutableLiveData<>();
@@ -33,8 +31,8 @@ public class GameViewModel extends ViewModel {
         this.opponentMatrix.setValue(game.getOpponentMatrix());
         this.gameState.setValue(game.getGameState());
         this.gameId.setValue(game.getGameId());
-        this.hostId.setValue(game.getHostUser().uid);
-        this.guestId.setValue(game.getConnectedUser().uid);
+        this.hostUser.setValue(game.getHostUser());
+        this.guestUser.setValue(game.getConnectedUser());
         this.hostIsReady.setValue(false);
         this.guestIsReady.setValue(false);
     }
@@ -49,30 +47,16 @@ public class GameViewModel extends ViewModel {
     }
 
     public Game GetGameInstance() {
-        final User[] users = {new User()};
-        Game game;
 
 
-        UserRepository.GetUserAsynchronous(hostId.getValue(), new FirebaseUserCallback() {
-            @Override
-            public void onUserCallback(User user) {
-                users[0] = user;
-            }
-        });
-
-        game = new Game(
-                //UserRepository.GetUserById(hostId.getValue()),
-                //UserRepository.GetUserById(guestId.getValue()),
-                users[0],
-                users[0],
+        return new Game(
+                hostUser.getValue(),
+                guestUser.getValue(),
                 playerMatrix.getValue(),
                 opponentMatrix.getValue(),
                 gameState.getValue(),
                 gameId.getValue(),
                 hostIsReady.getValue(),
                 guestIsReady.getValue());
-
-
-        return game;
     }
 }

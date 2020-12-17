@@ -21,8 +21,14 @@ import com.example.battleship.Utils.Constants;
 import com.example.battleship.ViewModels.GameViewModel;
 import com.example.battleship.ViewModels.GameViewModelFactory;
 import com.facebook.drawee.view.SimpleDraweeView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
+import java.util.Objects;
 
 public class GameActivity extends AppCompatActivity {
+    FirebaseUser currentUser;
+    FirebaseAuth mAuth;
 
     TextView playerNicknameText;
     TextView opponentNicknameText;
@@ -36,6 +42,8 @@ public class GameActivity extends AppCompatActivity {
     MatrixAdapter  opponentAdapter;
     GameViewModel gameViewModel;
 
+    boolean isHost;
+
     @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,9 +56,13 @@ public class GameActivity extends AppCompatActivity {
         getSupportActionBar().hide();
 
         Intent intent = getIntent();
-        // TODO fix empty opponent matrix
         Game game = (Game)intent.getSerializableExtra(Constants.GAME_EXTRA);
         gameViewModel = new ViewModelProvider(this, new GameViewModelFactory(game)).get(GameViewModel.class);
+
+        mAuth = FirebaseAuth.getInstance();
+        currentUser = mAuth.getCurrentUser();
+
+        isHost = Objects.equals(currentUser.getDisplayName(), game.getHostUser().username);
 
         playerNicknameText = findViewById(R.id.playerNicknameText);
         opponentNicknameText = findViewById(R.id.opponentNicknameText);
@@ -58,16 +70,22 @@ public class GameActivity extends AppCompatActivity {
         playerImage = findViewById(R.id.playerImage);
         opponentImage = findViewById(R.id.opponentImage);
 
+        if(isHost){
+            playerNicknameText.setText(Objects.requireNonNull(gameViewModel.hostUser.getValue()).username);
+            opponentNicknameText.setText(Objects.requireNonNull(gameViewModel.guestUser.getValue()).username);
+            playerImage.setImageURI(gameViewModel.hostUser.getValue().profileImageUrl);
+            opponentImage.setImageURI(gameViewModel.guestUser.getValue().profileImageUrl);
+        }
 
-        playerNicknameText.setText("Player");
-      //  opponentNicknameText.setText("Opponent");
-        opponentNicknameText.setText(gameViewModel.hostId.getValue());
-        playerImage.setImageURI("https://sun9-54.userapi.com/impg/cD1xpJQyXmsYGesvVRSJiKhoglB2UFGYBE6G5w/Qc5b-0dNKZo.jpg?size=1604x2160&quality=96&proxy=1&sign=774901725beeb7ac63ff2b7912c45aa1&type=album");
-        opponentImage.setImageURI("https://sun9-54.userapi.com/impg/cD1xpJQyXmsYGesvVRSJiKhoglB2UFGYBE6G5w/Qc5b-0dNKZo.jpg?size=1604x2160&quality=96&proxy=1&sign=774901725beeb7ac63ff2b7912c45aa1&type=album");
+        else{
+            playerNicknameText.setText(Objects.requireNonNull(gameViewModel.guestUser.getValue()).username);
+            opponentNicknameText.setText(Objects.requireNonNull(gameViewModel.hostUser.getValue()).username);
+            playerImage.setImageURI(gameViewModel.guestUser.getValue().profileImageUrl);
+            opponentImage.setImageURI(gameViewModel.hostUser.getValue().profileImageUrl);
+        }
 
         playerRecyclerView = findViewById(R.id.playerRecyclerView);
         opponentRecyclerView = findViewById(R.id.opponentRecyclerView);
-
 
         playerRecyclerView.setLayoutManager(new GridLayoutManager(getApplicationContext(), 10));
         opponentRecyclerView.setLayoutManager(new GridLayoutManager(getApplicationContext(), 10));
@@ -79,6 +97,5 @@ public class GameActivity extends AppCompatActivity {
         Matrix opponentMatrix = gameViewModel.opponentMatrix.getValue();
         opponentAdapter = new MatrixAdapter(this, opponentMatrix);
         opponentRecyclerView.setAdapter(opponentAdapter);
-
     }
 }

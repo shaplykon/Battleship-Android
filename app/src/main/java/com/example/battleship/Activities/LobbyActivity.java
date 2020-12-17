@@ -30,6 +30,7 @@ import java.util.Objects;
 public class LobbyActivity extends AppCompatActivity implements
         FieldControlsFragment.ControlsInteractionListener,
         FieldFragment.OnFieldChangedListener {
+
     FirebaseUser currentUser;
     FirebaseAuth mAuth;
 
