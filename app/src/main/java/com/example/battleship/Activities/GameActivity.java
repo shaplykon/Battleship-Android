@@ -1,7 +1,6 @@
 package com.example.battleship.Activities;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -53,7 +52,7 @@ public class GameActivity extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_game);
-        getSupportActionBar().hide();
+        Objects.requireNonNull(getSupportActionBar()).hide();
 
         Intent intent = getIntent();
         Game game = (Game)intent.getSerializableExtra(Constants.GAME_EXTRA);
@@ -70,19 +69,7 @@ public class GameActivity extends AppCompatActivity {
         playerImage = findViewById(R.id.playerImage);
         opponentImage = findViewById(R.id.opponentImage);
 
-        if(isHost){
-            playerNicknameText.setText(Objects.requireNonNull(gameViewModel.hostUser.getValue()).username);
-            opponentNicknameText.setText(Objects.requireNonNull(gameViewModel.guestUser.getValue()).username);
-            playerImage.setImageURI(gameViewModel.hostUser.getValue().profileImageUrl);
-            opponentImage.setImageURI(gameViewModel.guestUser.getValue().profileImageUrl);
-        }
-
-        else{
-            playerNicknameText.setText(Objects.requireNonNull(gameViewModel.guestUser.getValue()).username);
-            opponentNicknameText.setText(Objects.requireNonNull(gameViewModel.hostUser.getValue()).username);
-            playerImage.setImageURI(gameViewModel.guestUser.getValue().profileImageUrl);
-            opponentImage.setImageURI(gameViewModel.hostUser.getValue().profileImageUrl);
-        }
+        InitializeDisplaying();
 
         playerRecyclerView = findViewById(R.id.playerRecyclerView);
         opponentRecyclerView = findViewById(R.id.opponentRecyclerView);
@@ -97,5 +84,20 @@ public class GameActivity extends AppCompatActivity {
         Matrix opponentMatrix = gameViewModel.opponentMatrix.getValue();
         opponentAdapter = new MatrixAdapter(this, opponentMatrix);
         opponentRecyclerView.setAdapter(opponentAdapter);
+    }
+
+    private void InitializeDisplaying(){
+        if(isHost){
+            playerNicknameText.setText(Objects.requireNonNull(gameViewModel.hostUser.getValue()).username);
+            opponentNicknameText.setText(Objects.requireNonNull(gameViewModel.guestUser.getValue()).username);
+            playerImage.setImageURI(gameViewModel.hostUser.getValue().profileImageUrl);
+            opponentImage.setImageURI(gameViewModel.guestUser.getValue().profileImageUrl);
+        }
+        else{
+            playerNicknameText.setText(Objects.requireNonNull(gameViewModel.guestUser.getValue()).username);
+            opponentNicknameText.setText(Objects.requireNonNull(gameViewModel.hostUser.getValue()).username);
+            playerImage.setImageURI(gameViewModel.guestUser.getValue().profileImageUrl);
+            opponentImage.setImageURI(gameViewModel.hostUser.getValue().profileImageUrl);
+        }
     }
 }

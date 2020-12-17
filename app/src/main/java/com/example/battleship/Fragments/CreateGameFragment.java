@@ -81,6 +81,7 @@ public class CreateGameFragment extends DialogFragment {
                     Intent intent = new Intent(getContext(), LobbyActivity.class);
                     intent.putExtra("game", game);
                     startActivity(intent);
+                    gameDatabaseReference.removeEventListener(gameEventListener);
                 }
             }
 

@@ -4,12 +4,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.TextView;
 
-import com.example.battleship.Fragments.FieldControlsFragment;
 import com.example.battleship.Fragments.FieldFragment;
 import com.example.battleship.Models.Game;
 import com.example.battleship.Models.Matrix;
@@ -28,7 +32,6 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.Objects;
 
 public class LobbyActivity extends AppCompatActivity implements
-        FieldControlsFragment.ControlsInteractionListener,
         FieldFragment.OnFieldChangedListener {
 
     FirebaseUser currentUser;
@@ -45,7 +48,13 @@ public class LobbyActivity extends AppCompatActivity implements
     ImageView hostReadyImage;
     ImageView guestReadyImage;
 
+    Button refreshButton;
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
+    Switch readySwitch;
+
     boolean isHost;
+
+    // TODO Avoid refreshing field after opponent readiness
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +62,7 @@ public class LobbyActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_connect);
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
+
 
         hostReadyImage = findViewById(R.id.hostReadyImage);
         guestReadyImage = findViewById(R.id.guestReadyImage);
@@ -70,19 +80,24 @@ public class LobbyActivity extends AppCompatActivity implements
         gamesDatabaseReference = FirebaseDatabase.getInstance().getReference().child("games").
                 child(Objects.requireNonNull(gameViewModel.gameId.getValue()));
 
+        fragmentManager = getSupportFragmentManager();
+        ShowConnectionDetails(game);
+
         gameViewModel.guestIsReady.observe(this, isReady -> {
             if (isReady) {
                 guestReadyImage.setImageResource(R.drawable.check);
-                if (isHost)
+                if (isHost){
                     CheckReadiness();
-            } else
-                guestReadyImage.setImageResource(R.drawable.close);
-        });
+                    }
+            } else {
+                        guestReadyImage.setImageResource(R.drawable.close);
+            }});
+
         gameViewModel.hostIsReady.observe(this, isReady -> {
             if(isReady) {
                 hostReadyImage.setImageResource(R.drawable.check);
                 if(isHost){
-                    CheckReadiness();
+                   CheckReadiness();
                 }
             }else{
                 hostReadyImage.setImageResource(R.drawable.close);
@@ -100,7 +115,7 @@ public class LobbyActivity extends AppCompatActivity implements
 
                 }
             });
-            gameViewModel.gameState.observe(this, gameState ->
+           gameViewModel.gameState.observe(this, gameState ->
                     gamesDatabaseReference.child("gameState").setValue(gameState));
         }
         else{
@@ -116,6 +131,28 @@ public class LobbyActivity extends AppCompatActivity implements
             });
         }
 
+        refreshButton = findViewById(R.id.refreshButton);
+        readySwitch = findViewById(R.id.readySwitch);
+        refreshButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                HideField();
+                ShowField();
+            }
+        });
+        readySwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isHost) {
+                    gamesDatabaseReference.child("hostReady").setValue(isChecked);
+                    gameViewModel.hostIsReady.setValue(isChecked);
+                } else {
+                    gamesDatabaseReference.child("guestReady").setValue(isChecked);
+                    gameViewModel.guestIsReady.setValue(isChecked);
+                }
+            }
+        });
+
         gamesDatabaseReference.child("gameState").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -130,8 +167,7 @@ public class LobbyActivity extends AppCompatActivity implements
 
             }
         });
-        fragmentManager = getSupportFragmentManager();
-        ShowConnectionDetails(game);
+
     }
 
     private void CheckReadiness(){
@@ -141,26 +177,9 @@ public class LobbyActivity extends AppCompatActivity implements
     }
     private void ShowConnectionDetails(Game game){
         ShowField();
-        ShowControls();
         hostTextView.setText(game.getHostUser().username);
         guestTextView.setText(game.getConnectedUser().username);
-    }
-    @Override
-    public void ControlInteraction(int action, Boolean value) {
-        if (action == Constants.REFRESH_ACTION) {
-            HideField();
-            ShowField();
-        }
-        if (action == Constants.READY_ACTION) {
-            if (isHost) {
-                gamesDatabaseReference.child("hostReady").setValue(value);
-                gameViewModel.hostIsReady.setValue(value);
-            } else {
-                gamesDatabaseReference.child("guestReady").setValue(value);
-                gameViewModel.guestIsReady.setValue(value);
-            }
-        }
-    }
+      }
     private void ShowField(){
         getSupportFragmentManager().beginTransaction()
                 .setCustomAnimations(R.anim.fui_slide_in_right, R.anim.fui_slide_out_left)
@@ -173,12 +192,6 @@ public class LobbyActivity extends AppCompatActivity implements
         getSupportFragmentManager().beginTransaction()
                 .setCustomAnimations(R.anim.fui_slide_in_right, R.anim.fui_slide_out_left)
                 .remove(fieldFragment)
-                .commit();
-    }
-    private void ShowControls(){
-        getSupportFragmentManager().beginTransaction()
-                .setCustomAnimations(R.anim.fui_slide_in_right, R.anim.fui_slide_out_left)
-                .add(R.id.controlsContainer, new FieldControlsFragment())
                 .commit();
     }
     private void StartGame(){
