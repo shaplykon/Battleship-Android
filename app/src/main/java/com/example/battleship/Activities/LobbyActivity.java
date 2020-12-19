@@ -7,9 +7,7 @@ import androidx.lifecycle.ViewModelProvider;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -54,15 +52,12 @@ public class LobbyActivity extends AppCompatActivity implements
 
     boolean isHost;
 
-    // TODO Avoid refreshing field after opponent readiness
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_connect);
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
-
 
         hostReadyImage = findViewById(R.id.hostReadyImage);
         guestReadyImage = findViewById(R.id.guestReadyImage);
@@ -92,7 +87,6 @@ public class LobbyActivity extends AppCompatActivity implements
             } else {
                         guestReadyImage.setImageResource(R.drawable.close);
             }});
-
         gameViewModel.hostIsReady.observe(this, isReady -> {
             if(isReady) {
                 hostReadyImage.setImageResource(R.drawable.check);
@@ -133,26 +127,19 @@ public class LobbyActivity extends AppCompatActivity implements
 
         refreshButton = findViewById(R.id.refreshButton);
         readySwitch = findViewById(R.id.readySwitch);
-        refreshButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                HideField();
-                ShowField();
+        refreshButton.setOnClickListener(v -> {
+            HideField();
+            ShowField();
+        });
+        readySwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isHost) {
+                gamesDatabaseReference.child("hostReady").setValue(isChecked);
+                gameViewModel.hostIsReady.setValue(isChecked);
+            } else {
+                gamesDatabaseReference.child("guestReady").setValue(isChecked);
+                gameViewModel.guestIsReady.setValue(isChecked);
             }
         });
-        readySwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isHost) {
-                    gamesDatabaseReference.child("hostReady").setValue(isChecked);
-                    gameViewModel.hostIsReady.setValue(isChecked);
-                } else {
-                    gamesDatabaseReference.child("guestReady").setValue(isChecked);
-                    gameViewModel.guestIsReady.setValue(isChecked);
-                }
-            }
-        });
-
         gamesDatabaseReference.child("gameState").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -167,9 +154,7 @@ public class LobbyActivity extends AppCompatActivity implements
 
             }
         });
-
     }
-
     private void CheckReadiness(){
         if(gameViewModel.hostIsReady.getValue() && gameViewModel.guestIsReady.getValue()){
             gameViewModel.gameState.setValue(Constants.ACTIVE_STATE);
@@ -194,7 +179,16 @@ public class LobbyActivity extends AppCompatActivity implements
                 .remove(fieldFragment)
                 .commit();
     }
-    private void StartGame(){
+    private void StartGame() {
+        String matrixReference;
+        if (isHost)
+            matrixReference = "hostMatrix";
+        else
+            matrixReference = "connectedMatrix";
+
+        gamesDatabaseReference.child(matrixReference).setValue(
+                Objects.requireNonNull(gameViewModel.playerMatrix.getValue()).GetList());
+
         Intent intent = new Intent(getApplicationContext(), GameActivity.class);
         gameViewModel.SetOpponentMatrix();
         Game game = gameViewModel.GetGameInstance();

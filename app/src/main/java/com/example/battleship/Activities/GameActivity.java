@@ -1,5 +1,7 @@
 package com.example.battleship.Activities;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -7,12 +9,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.example.battleship.Adapters.MatrixAdapter;
+import com.example.battleship.Models.Cell;
 import com.example.battleship.Models.Game;
 import com.example.battleship.Models.Matrix;
 import com.example.battleship.R;
@@ -22,7 +27,15 @@ import com.example.battleship.ViewModels.GameViewModelFactory;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
 public class GameActivity extends AppCompatActivity {
@@ -41,6 +54,9 @@ public class GameActivity extends AppCompatActivity {
     MatrixAdapter  opponentAdapter;
     GameViewModel gameViewModel;
 
+    DatabaseReference gameDatabaseReference;
+
+
     boolean isHost;
 
     @SuppressLint("SetTextI18n")
@@ -54,14 +70,20 @@ public class GameActivity extends AppCompatActivity {
         setContentView(R.layout.activity_game);
         Objects.requireNonNull(getSupportActionBar()).hide();
 
+
         Intent intent = getIntent();
-        Game game = (Game)intent.getSerializableExtra(Constants.GAME_EXTRA);
+        Game game = (Game) intent.getSerializableExtra(Constants.GAME_EXTRA);
         gameViewModel = new ViewModelProvider(this, new GameViewModelFactory(game)).get(GameViewModel.class);
+
+        gameDatabaseReference = FirebaseDatabase.getInstance().getReference("games").
+                child(Objects.requireNonNull(gameViewModel.gameId.getValue()));
+
 
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
 
         isHost = Objects.equals(currentUser.getDisplayName(), game.getHostUser().username);
+        String matrixPath = isHost ? "connectedMatrix" : "hostMatrix";
 
         playerNicknameText = findViewById(R.id.playerNicknameText);
         opponentNicknameText = findViewById(R.id.opponentNicknameText);
@@ -78,12 +100,29 @@ public class GameActivity extends AppCompatActivity {
         opponentRecyclerView.setLayoutManager(new GridLayoutManager(getApplicationContext(), 10));
 
         Matrix playerMatrix = gameViewModel.playerMatrix.getValue();
-        playerAdapter = new MatrixAdapter(this, playerMatrix);
-        playerRecyclerView.setAdapter( playerAdapter);
+        playerAdapter = new MatrixAdapter(this, playerMatrix, false);
+        playerRecyclerView.setAdapter(playerAdapter);
 
-        Matrix opponentMatrix = gameViewModel.opponentMatrix.getValue();
-        opponentAdapter = new MatrixAdapter(this, opponentMatrix);
-        opponentRecyclerView.setAdapter(opponentAdapter);
+
+        gameDatabaseReference.child(matrixPath).addValueEventListener(new ValueEventListener() {
+            @RequiresApi(api = Build.VERSION_CODES.N)
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<List<HashMap<Object, Object>>> fieldList = (List<List<HashMap<Object, Object>>>) snapshot.getValue();
+                if (fieldList != null) {
+                    Matrix opponentMatrix = new Matrix(fieldList);
+                    opponentAdapter = new MatrixAdapter(getApplicationContext(), opponentMatrix, true);
+                    opponentRecyclerView.setAdapter(opponentAdapter);
+                    gameDatabaseReference.removeEventListener(this);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
     }
 
     private void InitializeDisplaying(){

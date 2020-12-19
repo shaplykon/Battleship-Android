@@ -1,7 +1,15 @@
 package com.example.battleship.Models;
+import android.os.Build;
+
+import androidx.annotation.RequiresApi;
+
 import com.example.battleship.Utils.Constants;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 
 public class Matrix implements Serializable {
@@ -11,20 +19,36 @@ public class Matrix implements Serializable {
     public Matrix() {
         this.matrix = new Cell[10][10];
 
-        for (int i = 0; i < 10; i++) {
-            for (int j = 0; j < 10; j++) {
-                this.matrix[i][j] = new Cell();
+        for (int row = 0; row < 10; row++) {
+            for (int column = 0; column < 10; column++) {
+                this.matrix[row][column] = new Cell();
             }
         }
     }
 
-    public void GenerateMatrix() {
-        for (int i = 0; i < 10; i++) {
-            for (int j = 0; j < 10; j++) {
-                matrix[i][j] = new Cell();
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public Matrix(List<List<HashMap<Object, Object>>> fieldList){
+        this.matrix = new Cell[10][10];
+
+        for (int row = 0; row < 10; row++) {
+            for (int column = 0; column < 10; column++) {
+                this.matrix[row][column] = new Cell((boolean)fieldList.get(row).get(column).getOrDefault("isHead", false),
+                        ((Long) fieldList.get(row).get(column).getOrDefault("type", 0)).intValue());
+
             }
         }
+    }
 
+    public List<List<Cell>> GetList(){
+        List<List<Cell>> matrixList = new ArrayList<>();
+        for(int row = 0; row < 10; row++){
+            ArrayList<Cell> listRow = new ArrayList<>(Arrays.asList(matrix[row]).subList(0, 10));
+            matrixList.add(listRow);
+        }
+        return  matrixList;
+    }
+
+    public void GenerateMatrix() {
         for (int i = 0; i < array.length; ) {
             Random random = new Random();
             int pointX = random.nextInt(10);
@@ -36,8 +60,6 @@ public class Matrix implements Serializable {
             }
         }
     }
-
-
     private boolean CheckCell(int pointX, int pointY, int rotation, int length) {
         if (rotation == Constants.HORIZONTAL) {
             for (int k = 0; k < length; k++) {

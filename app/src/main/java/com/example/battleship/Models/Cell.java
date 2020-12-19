@@ -11,5 +11,10 @@ public class Cell implements Serializable {
     public Cell(){
         this.type = Constants.EMPTY_CELL;
     }
+    public Cell(boolean isHead, int type){
+        this.type = type;
+        this.isHead = isHead;
+    }
+
 
 }

@@ -19,18 +19,15 @@ import com.example.battleship.R;
 public class FieldFragment extends Fragment {
     OnFieldChangedListener mOnFieldChangedListener;
     RecyclerView recyclerView;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
-
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         mOnFieldChangedListener = (OnFieldChangedListener) context;
     }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -41,12 +38,11 @@ public class FieldFragment extends Fragment {
         matrix.GenerateMatrix();
 
         mOnFieldChangedListener.OnFieldChanged(matrix);
-        MatrixAdapter adapter = new MatrixAdapter(getContext(), matrix);
+        MatrixAdapter adapter = new MatrixAdapter(getContext(), matrix,false);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(),10));
         return view;
     }
-
     public interface OnFieldChangedListener{
         void OnFieldChanged(Matrix matrix);
     }
