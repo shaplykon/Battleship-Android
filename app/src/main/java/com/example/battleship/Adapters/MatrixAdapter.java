@@ -20,7 +20,6 @@ public class MatrixAdapter extends RecyclerView.Adapter<MatrixAdapter.ViewHolder
 
     Matrix matrix;
     Context context;
-    private LayoutInflater inflater;
     boolean isOpponentMatrix;
 
     public void set(){
@@ -31,7 +30,6 @@ public class MatrixAdapter extends RecyclerView.Adapter<MatrixAdapter.ViewHolder
         this.isOpponentMatrix = isOpponentMatrix;
         this.matrix = matrix;
         this.context = context;
-        this.inflater = LayoutInflater.from(context);
     }
 
     @NonNull
@@ -55,14 +53,17 @@ public class MatrixAdapter extends RecyclerView.Adapter<MatrixAdapter.ViewHolder
         View.OnClickListener onCellClicked = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(matrix.matrix[i][j].type == Constants.SHIP_CELL)
+                if (matrix.matrix[i][j].type == Constants.SHIP_CELL) {
+                    holder.cellImageView.setImageResource(R.drawable.close);
                     Toast.makeText(context, "Korabl", Toast.LENGTH_LONG).show();
+                    //matrix.matrix[i][j].type = Constants.CHECKED_CELL;
+                }
+
+                else if(matrix.matrix[i][j].type == Constants.NEARBY_CELL || matrix.matrix[i][j].type == Constants.EMPTY_CELL ){
+                    holder.cellImageView.setImageResource(R.drawable.miss);
+                }
             }
         };
-
-
-
-        holder.cellImageView.setOnClickListener(onCellClicked);
 
         if (!isOpponentMatrix) {
             if (matrix.matrix[i][j].type == Constants.SHIP_CELL) {
@@ -77,6 +78,9 @@ public class MatrixAdapter extends RecyclerView.Adapter<MatrixAdapter.ViewHolder
                 //holder.cellImageView.setBackgroundColor(R.color.green);
             }
 
+        }
+        else{
+            holder.cellImageView.setOnClickListener(onCellClicked);
         }
 
 
@@ -95,13 +99,6 @@ public class MatrixAdapter extends RecyclerView.Adapter<MatrixAdapter.ViewHolder
             cellImageView = view.findViewById(R.id.cell_image_view);
 
             view.setClickable(isOpponentMatrix);
-
-            cellImageView.setOnClickListener(v -> {
-                //v.setBackgroundColor(R.color.colorAccent);
-            });
-
-
-
         }
     }
 }
