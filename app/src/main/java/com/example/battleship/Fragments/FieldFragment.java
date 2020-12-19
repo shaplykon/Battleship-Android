@@ -13,12 +13,14 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.battleship.Adapters.MatrixAdapter;
+import com.example.battleship.Adapters.OnCellClickListener;
 import com.example.battleship.Models.Matrix;
 import com.example.battleship.R;
 
 public class FieldFragment extends Fragment {
     OnFieldChangedListener mOnFieldChangedListener;
     RecyclerView recyclerView;
+    Context context;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,6 +28,7 @@ public class FieldFragment extends Fragment {
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
+        this.context = context;
         mOnFieldChangedListener = (OnFieldChangedListener) context;
     }
     @Override
@@ -38,7 +41,7 @@ public class FieldFragment extends Fragment {
         matrix.GenerateMatrix();
 
         mOnFieldChangedListener.OnFieldChanged(matrix);
-        MatrixAdapter adapter = new MatrixAdapter(getContext(), matrix,false);
+        MatrixAdapter adapter = new MatrixAdapter(getContext(), matrix,false, null);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(),10));
         return view;

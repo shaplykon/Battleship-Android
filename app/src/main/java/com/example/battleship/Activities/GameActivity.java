@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,6 +18,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.example.battleship.Adapters.MatrixAdapter;
+import com.example.battleship.Adapters.OnCellClickListener;
 import com.example.battleship.Models.Cell;
 import com.example.battleship.Models.Game;
 import com.example.battleship.Models.Matrix;
@@ -38,7 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
-public class GameActivity extends AppCompatActivity {
+public class GameActivity extends AppCompatActivity implements OnCellClickListener {
     FirebaseUser currentUser;
     FirebaseAuth mAuth;
 
@@ -55,7 +57,10 @@ public class GameActivity extends AppCompatActivity {
     GameViewModel gameViewModel;
 
     DatabaseReference gameDatabaseReference;
+    Matrix opponentMatrix;
 
+    String opponentMatrixPath;
+    String playerMatrixPath;
 
     boolean isHost;
 
@@ -83,7 +88,9 @@ public class GameActivity extends AppCompatActivity {
         currentUser = mAuth.getCurrentUser();
 
         isHost = Objects.equals(currentUser.getDisplayName(), game.getHostUser().username);
-        String matrixPath = isHost ? "connectedMatrix" : "hostMatrix";
+
+        opponentMatrixPath = isHost ? "connectedMatrix" : "hostMatrix";
+        playerMatrixPath = !isHost  ? "connectedMatrix" : "hostMatrix";
 
         playerNicknameText = findViewById(R.id.playerNicknameText);
         opponentNicknameText = findViewById(R.id.opponentNicknameText);
@@ -100,20 +107,37 @@ public class GameActivity extends AppCompatActivity {
         opponentRecyclerView.setLayoutManager(new GridLayoutManager(getApplicationContext(), 10));
 
         Matrix playerMatrix = gameViewModel.playerMatrix.getValue();
-        playerAdapter = new MatrixAdapter(this, playerMatrix, false);
+        playerAdapter = new MatrixAdapter(this, playerMatrix, false, this);
         playerRecyclerView.setAdapter(playerAdapter);
+        Context context = this;
 
-
-        gameDatabaseReference.child(matrixPath).addValueEventListener(new ValueEventListener() {
+        gameDatabaseReference.child(opponentMatrixPath).addValueEventListener(new ValueEventListener() {
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 List<List<HashMap<Object, Object>>> fieldList = (List<List<HashMap<Object, Object>>>) snapshot.getValue();
                 if (fieldList != null) {
-                    Matrix opponentMatrix = new Matrix(fieldList);
-                    opponentAdapter = new MatrixAdapter(getApplicationContext(), opponentMatrix, true);
+                    opponentMatrix = new Matrix(fieldList);
+                    opponentAdapter = new MatrixAdapter(getApplicationContext(), opponentMatrix, true, (OnCellClickListener) context);
                     opponentRecyclerView.setAdapter(opponentAdapter);
                     gameDatabaseReference.removeEventListener(this);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+        gameDatabaseReference.child(playerMatrixPath).addValueEventListener(new ValueEventListener() {
+            @RequiresApi(api = Build.VERSION_CODES.N)
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<List<HashMap<Object, Object>>> fieldList = (List<List<HashMap<Object, Object>>>) snapshot.getValue();
+                if (fieldList != null) {
+                    playerAdapter.set(new Matrix(fieldList));
+
                 }
             }
 
@@ -138,5 +162,20 @@ public class GameActivity extends AppCompatActivity {
             playerImage.setImageURI(gameViewModel.guestUser.getValue().profileImageUrl);
             opponentImage.setImageURI(gameViewModel.hostUser.getValue().profileImageUrl);
         }
+    }
+
+    @Override
+    public void onCellClicked(int row, int column, int result) {
+        switch (result){
+            case Constants.RESULT_HIT:{
+                opponentMatrix.matrix[row][column].type = Constants.HIT_CELL;
+                break;
+            }
+            case Constants.RESULT_MISS:{
+                opponentMatrix.matrix[row][column].type = Constants.CHECKED_CELL;
+            }
+        }
+
+        gameDatabaseReference.child(opponentMatrixPath).setValue(opponentMatrix.GetList());
     }
 }

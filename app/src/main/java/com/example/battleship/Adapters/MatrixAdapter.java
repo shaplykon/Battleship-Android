@@ -20,16 +20,21 @@ public class MatrixAdapter extends RecyclerView.Adapter<MatrixAdapter.ViewHolder
 
     Matrix matrix;
     Context context;
+    OnCellClickListener mOnCellClickListener;
     boolean isOpponentMatrix;
 
-    public void set(){
+    public void set(Matrix matrix){
+        this.matrix = matrix;
         notifyDataSetChanged();
     }
 
-    public MatrixAdapter(Context context, Matrix matrix, boolean isOpponentMatrix){
+    public MatrixAdapter(Context context, Matrix matrix, boolean isOpponentMatrix,
+                         OnCellClickListener onCellClickListener){
         this.isOpponentMatrix = isOpponentMatrix;
         this.matrix = matrix;
         this.context = context;
+        this.mOnCellClickListener = onCellClickListener;
+
     }
 
     @NonNull
@@ -45,45 +50,43 @@ public class MatrixAdapter extends RecyclerView.Adapter<MatrixAdapter.ViewHolder
     @SuppressLint("ResourceAsColor")
     @Override
     public void onBindViewHolder(MatrixAdapter.ViewHolder holder, int position) {
-        int i = position / 10;
-        int j = position % 10;
+        int row = position / 10;
+        int column = position % 10;
 
         holder.cellImageView.setImageResource(R.drawable.square);
 
-        View.OnClickListener onCellClicked = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (matrix.matrix[i][j].type == Constants.SHIP_CELL) {
-                    holder.cellImageView.setImageResource(R.drawable.close);
-                    Toast.makeText(context, "Korabl", Toast.LENGTH_LONG).show();
-                    //matrix.matrix[i][j].type = Constants.CHECKED_CELL;
-                }
-
-                else if(matrix.matrix[i][j].type == Constants.NEARBY_CELL || matrix.matrix[i][j].type == Constants.EMPTY_CELL ){
-                    holder.cellImageView.setImageResource(R.drawable.miss);
-                }
+        View.OnClickListener onCellClicked = v -> {
+            if (matrix.matrix[row][column].type == Constants.SHIP_CELL) {
+                holder.cellImageView.setImageResource(R.drawable.close);
+                Toast.makeText(context, "Korabl", Toast.LENGTH_LONG).show();
+                mOnCellClickListener.onCellClicked(row, column, Constants.RESULT_HIT);
+                matrix.matrix[row][column].type = Constants.HIT_CELL;
             }
+
+            else if(matrix.matrix[row][column].type == Constants.NEARBY_CELL ||
+                    matrix.matrix[row][column].type == Constants.EMPTY_CELL ){
+                holder.cellImageView.setImageResource(R.drawable.miss);
+                mOnCellClickListener.onCellClicked(row, column, Constants.RESULT_MISS);
+            }
+
         };
 
         if (!isOpponentMatrix) {
-            if (matrix.matrix[i][j].type == Constants.SHIP_CELL) {
-                if (matrix.matrix[i][j].isHead) {
+            if (matrix.matrix[row][column].type == Constants.SHIP_CELL) {
                     holder.cellImageView.setBackgroundColor(R.color.black);
-                    //  holder.cellImageView.setImageResource(R.drawable.head);
-                } else {
-                    holder.cellImageView.setBackgroundColor(R.color.black);
-                }
             }
-            if (matrix.matrix[i][j].type == Constants.NEARBY_CELL) {
-                //holder.cellImageView.setBackgroundColor(R.color.green);
-            }
-
         }
+
         else{
             holder.cellImageView.setOnClickListener(onCellClicked);
         }
 
-
+        if(matrix.matrix[row][column].type == Constants.HIT_CELL){
+            holder.cellImageView.setImageResource(R.drawable.close);
+        }
+        else if(matrix.matrix[row][column].type == Constants.CHECKED_CELL){
+            holder.cellImageView.setImageResource(R.drawable.miss);
+        }
     }
 
     @Override
@@ -103,6 +106,3 @@ public class MatrixAdapter extends RecyclerView.Adapter<MatrixAdapter.ViewHolder
     }
 }
 
-interface OnCellClickListener{
-    void onCellClicked();
-}
