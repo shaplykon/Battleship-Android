@@ -13,6 +13,7 @@ public class Game implements Serializable {
     private String gameId;
     private boolean hostReady;
     private boolean guestReady;
+    private boolean hostStep;
 
     public Game(User hostUser, User connectedUser, Matrix hostMatrix, Matrix connectedMatrix,
                 String gameState, String gameId, boolean hostReady, boolean guestReady) {

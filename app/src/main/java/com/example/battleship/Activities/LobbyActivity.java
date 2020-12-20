@@ -19,6 +19,7 @@ import com.example.battleship.R;
 import com.example.battleship.Utils.Constants;
 import com.example.battleship.ViewModels.GameViewModel;
 import com.example.battleship.ViewModels.GameViewModelFactory;
+import com.facebook.drawee.view.SimpleDraweeView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -47,6 +48,10 @@ public class LobbyActivity extends AppCompatActivity implements
     ImageView guestReadyImage;
 
     Button refreshButton;
+
+    SimpleDraweeView hostProfileImage;
+    SimpleDraweeView guestProfileImage;
+
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     Switch readySwitch;
 
@@ -58,6 +63,9 @@ public class LobbyActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_connect);
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
+
+        hostProfileImage = findViewById(R.id.hostProfileImage);
+        guestProfileImage = findViewById(R.id.guestProfileImage);
 
         hostReadyImage = findViewById(R.id.hostReadyImage);
         guestReadyImage = findViewById(R.id.guestReadyImage);
@@ -88,12 +96,12 @@ public class LobbyActivity extends AppCompatActivity implements
                         guestReadyImage.setImageResource(R.drawable.close);
             }});
         gameViewModel.hostIsReady.observe(this, isReady -> {
-            if(isReady) {
+            if (isReady) {
                 hostReadyImage.setImageResource(R.drawable.check);
-                if(isHost){
-                   CheckReadiness();
+                if (isHost) {
+                    CheckReadiness();
                 }
-            }else{
+            } else {
                 hostReadyImage.setImageResource(R.drawable.close);
             }
         });
@@ -164,6 +172,9 @@ public class LobbyActivity extends AppCompatActivity implements
         ShowField();
         hostTextView.setText(game.getHostUser().username);
         guestTextView.setText(game.getConnectedUser().username);
+
+        hostProfileImage.setImageURI(game.getHostUser().profileImageUrl);
+        guestProfileImage.setImageURI(game.getConnectedUser().profileImageUrl);
       }
     private void ShowField(){
         getSupportFragmentManager().beginTransaction()
@@ -189,8 +200,10 @@ public class LobbyActivity extends AppCompatActivity implements
         gamesDatabaseReference.child(matrixReference).setValue(
                 Objects.requireNonNull(gameViewModel.playerMatrix.getValue()).GetList());
 
+        gamesDatabaseReference.child("hostStep").setValue(true);
         Intent intent = new Intent(getApplicationContext(), GameActivity.class);
         gameViewModel.SetOpponentMatrix();
+        gameViewModel.hostStep.setValue(true);
         Game game = gameViewModel.GetGameInstance();
         intent.putExtra(Constants.GAME_EXTRA, game);
         startActivity(intent);

@@ -41,7 +41,7 @@ public class FieldFragment extends Fragment {
         matrix.GenerateMatrix();
 
         mOnFieldChangedListener.OnFieldChanged(matrix);
-        MatrixAdapter adapter = new MatrixAdapter(getContext(), matrix,false, null);
+        MatrixAdapter adapter = new MatrixAdapter(getContext(), matrix,false, null, false);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(),10));
         return view;

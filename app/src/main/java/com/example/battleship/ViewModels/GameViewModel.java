@@ -16,6 +16,7 @@ public class GameViewModel extends ViewModel {
     public MutableLiveData<Boolean> guestIsReady;
     public MutableLiveData<String> gameId;
     public MutableLiveData<String> gameState;
+    public MutableLiveData<Boolean> hostStep;
 
     public GameViewModel(Game game) {
         this.hostUser = new MutableLiveData<>();
@@ -26,6 +27,7 @@ public class GameViewModel extends ViewModel {
         this.gameState = new MutableLiveData<>();
         this.opponentMatrix = new MutableLiveData<>();
         this.playerMatrix = new MutableLiveData<>();
+        this.hostStep = new MutableLiveData<>();
 
         this.playerMatrix.setValue(game.getPlayerMatrix());
         this.opponentMatrix.setValue(game.getOpponentMatrix());
@@ -35,7 +37,9 @@ public class GameViewModel extends ViewModel {
         this.guestUser.setValue(game.getConnectedUser());
         this.hostIsReady.setValue(false);
         this.guestIsReady.setValue(false);
+        this.hostStep.setValue(true);
     }
+
 
     public void SetPlayerMatrix(Matrix matrix) {
         this.playerMatrix.setValue(matrix);

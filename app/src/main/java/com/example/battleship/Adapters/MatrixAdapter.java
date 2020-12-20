@@ -22,19 +22,25 @@ public class MatrixAdapter extends RecyclerView.Adapter<MatrixAdapter.ViewHolder
     Context context;
     OnCellClickListener mOnCellClickListener;
     boolean isOpponentMatrix;
+    boolean clickAllowed;
 
-    public void set(Matrix matrix){
+    public void UpdateMatrix(Matrix matrix){
         this.matrix = matrix;
         notifyDataSetChanged();
     }
 
+    public void SetClickable(boolean clickable){
+        this.clickAllowed = clickable;
+        notifyDataSetChanged();
+    }
+
     public MatrixAdapter(Context context, Matrix matrix, boolean isOpponentMatrix,
-                         OnCellClickListener onCellClickListener){
+                         OnCellClickListener onCellClickListener, boolean clickAllowed){
         this.isOpponentMatrix = isOpponentMatrix;
         this.matrix = matrix;
         this.context = context;
         this.mOnCellClickListener = onCellClickListener;
-
+        this.clickAllowed = clickAllowed;
     }
 
     @NonNull
@@ -54,17 +60,13 @@ public class MatrixAdapter extends RecyclerView.Adapter<MatrixAdapter.ViewHolder
         int column = position % 10;
 
         holder.cellImageView.setImageResource(R.drawable.square);
-
         View.OnClickListener onCellClicked = v -> {
             if (matrix.matrix[row][column].type == Constants.SHIP_CELL) {
-                holder.cellImageView.setImageResource(R.drawable.close);
-                Toast.makeText(context, "Korabl", Toast.LENGTH_LONG).show();
+                holder.cellImageView.setImageResource(R.drawable.hit);
                 mOnCellClickListener.onCellClicked(row, column, Constants.RESULT_HIT);
                 matrix.matrix[row][column].type = Constants.HIT_CELL;
-            }
-
-            else if(matrix.matrix[row][column].type == Constants.NEARBY_CELL ||
-                    matrix.matrix[row][column].type == Constants.EMPTY_CELL ){
+            } else if (matrix.matrix[row][column].type == Constants.NEARBY_CELL ||
+                    matrix.matrix[row][column].type == Constants.EMPTY_CELL) {
                 holder.cellImageView.setImageResource(R.drawable.miss);
                 mOnCellClickListener.onCellClicked(row, column, Constants.RESULT_MISS);
             }
@@ -72,19 +74,17 @@ public class MatrixAdapter extends RecyclerView.Adapter<MatrixAdapter.ViewHolder
         };
 
         if (!isOpponentMatrix) {
-            if (matrix.matrix[row][column].type == Constants.SHIP_CELL) {
-                    holder.cellImageView.setBackgroundColor(R.color.black);
-            }
+            if (matrix.matrix[row][column].type == Constants.SHIP_CELL)
+                holder.cellImageView.setBackgroundColor(R.color.black);
+        }
+        else {
+            if (clickAllowed)
+                holder.cellImageView.setOnClickListener(onCellClicked);
         }
 
-        else{
-            holder.cellImageView.setOnClickListener(onCellClicked);
-        }
-
-        if(matrix.matrix[row][column].type == Constants.HIT_CELL){
-            holder.cellImageView.setImageResource(R.drawable.close);
-        }
-        else if(matrix.matrix[row][column].type == Constants.CHECKED_CELL){
+        if (matrix.matrix[row][column].type == Constants.HIT_CELL) {
+            holder.cellImageView.setImageResource(R.drawable.hit);
+        } else if (matrix.matrix[row][column].type == Constants.CHECKED_CELL) {
             holder.cellImageView.setImageResource(R.drawable.miss);
         }
     }
@@ -100,9 +100,9 @@ public class MatrixAdapter extends RecyclerView.Adapter<MatrixAdapter.ViewHolder
         ViewHolder(View view, boolean isOpponentMatrix) {
             super(view);
             cellImageView = view.findViewById(R.id.cell_image_view);
-
             view.setClickable(isOpponentMatrix);
         }
+
     }
 }
 
