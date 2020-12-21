@@ -29,6 +29,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.Objects;
+
 public class ConnectGameFragment extends DialogFragment {
 
     TextView idInput;
@@ -89,6 +91,7 @@ public class ConnectGameFragment extends DialogFragment {
 
     private void EstablishGameConnection(Game game){
         if (game.getHostUser() != null) {
+            Objects.requireNonNull(getActivity()).getSupportFragmentManager().beginTransaction().remove(this).commit();
             game.setConnectedUser(new User(currentUser.getUid(), currentUser.getDisplayName(), currentUser.getPhotoUrl().toString()));
             gamesDatabaseReference.setValue(game);
             Intent intent = new Intent(getContext(), LobbyActivity.class);

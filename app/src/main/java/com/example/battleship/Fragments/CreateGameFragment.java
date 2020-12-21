@@ -25,6 +25,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.Objects;
+
 public class CreateGameFragment extends DialogFragment {
     TextView gameIdTextView;
     ProgressBar progressBar;
@@ -72,24 +74,27 @@ public class CreateGameFragment extends DialogFragment {
         return view;
     }
 
-    private void WaitGuestConnection(){
+    private void WaitGuestConnection() {
         gameEventListener = gameDatabaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Game game = snapshot.getValue(Game.class);
-                if (game.getConnectedUser() != null) {
-                    Intent intent = new Intent(getContext(), LobbyActivity.class);
-                    intent.putExtra("game", game);
-                    startActivity(intent);
-                    gameDatabaseReference.removeEventListener(gameEventListener);
-                }
+                if (game.getConnectedUser() != null)
+                    StartGame(game);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-
             }
         });
+    }
+
+    private void StartGame(Game game){
+        Intent intent = new Intent(getContext(), LobbyActivity.class);
+        intent.putExtra("game", game);
+   //     Objects.requireNonNull(getActivity()).getSupportFragmentManager().beginTransaction().remove(this).commit();
+        startActivity(intent);
+        gameDatabaseReference.removeEventListener(gameEventListener);
     }
 
     @Override

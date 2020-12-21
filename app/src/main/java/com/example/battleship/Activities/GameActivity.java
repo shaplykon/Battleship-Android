@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -22,6 +23,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.battleship.Adapters.MatrixAdapter;
 import com.example.battleship.Adapters.OnCellClickListener;
@@ -32,6 +34,7 @@ import com.example.battleship.Utils.Constants;
 import com.example.battleship.ViewModels.GameViewModel;
 import com.example.battleship.ViewModels.GameViewModelFactory;
 import com.facebook.drawee.view.SimpleDraweeView;
+import com.facebook.imagepipeline.producers.JobScheduler;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -125,7 +128,7 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
         playerRecyclerView.setAdapter(playerAdapter);
 
         Context context = this;
-         gameDatabaseReference.child(opponentMatrixPath).addListenerForSingleValueEvent(new ValueEventListener() {
+        gameDatabaseReference.child(opponentMatrixPath).addListenerForSingleValueEvent(new ValueEventListener() {
              @RequiresApi(api = Build.VERSION_CODES.N)
              @Override
              public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -143,7 +146,6 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
 
              }
          });
-
         playerMatrixValueEventListener = gameDatabaseReference.child(playerMatrixPath).addValueEventListener(new ValueEventListener() {
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
@@ -159,7 +161,6 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
 
             }
         });
-
         hostStepValueEventListener = gameDatabaseReference.child("hostStep").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -172,7 +173,6 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
 
             }
         });
-
         gameViewModel.hostStep.observe(this, isHostStep -> {
             if (isHostStep) {
                 if (isHost)
@@ -189,9 +189,34 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
             if (opponentAdapter != null)
                 opponentAdapter.SetClickable(isHostStep == isHost);
         });
+
+        gameViewModel.hitsToWin.observe(this, hitsToWin -> {
+            if(hitsToWin == 0) {
+                gameDatabaseReference.child("hostWin").setValue(isHost);
+                gameDatabaseReference.child("gameState").setValue(Constants.FINISHED_STATE);
+            }});
+
+        gameDatabaseReference.child("hostWin").addValueEventListener(new ValueEventListener() {
+            @SuppressLint("ShowToast")
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Boolean hostWin = (Boolean) snapshot.getValue();
+                if (hostWin != null) {
+                    if (hostWin)
+                        Toast.makeText(context, gameViewModel.hostUser.getValue().username + " wins!", Toast.LENGTH_LONG).show();
+                    else
+                        Toast.makeText(context, gameViewModel.guestUser.getValue().username + " wins!", Toast.LENGTH_LONG).show();
+                    opponentAdapter.SetClickable(false);
+                    opponentAdapter.ShowShipsAfterDefeat();
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+            }
+        });
     }
 
-    private void ShowPlayerStepImage(){
+    private void ShowPlayerStepImage() {
         playerStepImage.setVisibility(View.VISIBLE);
         opponentStepImage.setVisibility(View.INVISIBLE);
     }
@@ -224,6 +249,7 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
                 opponentMatrix.matrix[row][column].type = Constants.HIT_CELL;
                 Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
                 v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+                gameViewModel.hitsToWin.setValue(gameViewModel.hitsToWin.getValue() - 1);
                 break;
             }
             case Constants.RESULT_MISS:{
@@ -236,8 +262,6 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
-
         final AlertDialog aboutDialog = new AlertDialog.Builder(
                 GameActivity.this).setMessage("Are you sure tou want to leave this game?")
                 .setPositiveButton("Yes", (dialog, which) -> finish())
@@ -245,9 +269,7 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
                 }).create();
 
         aboutDialog.show();
-
     }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();

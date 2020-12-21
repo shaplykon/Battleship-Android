@@ -39,18 +39,6 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().hide();
         setContentView(R.layout.activity_main);
 
-        /*VideoView videoview = (VideoView) findViewById(R.id.videoView);
-        Uri uri = Uri.parse("android.resource://"+getPackageName()+"/"+R.raw.test);
-        videoview.setVideoURI(uri);
-        videoview.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mp) {
-                mp.setLooping(true);
-            }
-        });
-        videoview.start();
-        */
-
         mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.menu_sound);
         mediaPlayer.setLooping(true);
         mediaPlayer.start();

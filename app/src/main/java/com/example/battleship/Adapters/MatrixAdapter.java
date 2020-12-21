@@ -24,6 +24,11 @@ public class MatrixAdapter extends RecyclerView.Adapter<MatrixAdapter.ViewHolder
     boolean isOpponentMatrix;
     boolean clickAllowed;
 
+    public void ShowShipsAfterDefeat(){
+        this.isOpponentMatrix = false;
+        notifyDataSetChanged();
+    }
+
     public void UpdateMatrix(Matrix matrix){
         this.matrix = matrix;
         notifyDataSetChanged();
