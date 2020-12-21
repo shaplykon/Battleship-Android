@@ -105,7 +105,8 @@ public class CreateGameFragment extends DialogFragment {
     }
 
     private void DeleteGame(){
-        gameDatabaseReference.removeEventListener(gameEventListener);
+        if(gameEventListener != null)
+            gameDatabaseReference.removeEventListener(gameEventListener);
         gameDatabaseReference.removeValue();
     }
 }

@@ -2,13 +2,16 @@ package com.example.battleship.Activities;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -61,6 +64,10 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
     MatrixAdapter  opponentAdapter;
 
     GameViewModel gameViewModel;
+
+    ValueEventListener opponentMatrixValueEventListener;
+    ValueEventListener playerMatrixValueEventListener;
+    ValueEventListener hostStepValueEventListener;
 
     DatabaseReference gameDatabaseReference;
     Matrix opponentMatrix;
@@ -116,29 +123,28 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
         Matrix playerMatrix = gameViewModel.playerMatrix.getValue();
         playerAdapter = new MatrixAdapter(this, playerMatrix, false, this, false);
         playerRecyclerView.setAdapter(playerAdapter);
+
         Context context = this;
+         gameDatabaseReference.child(opponentMatrixPath).addListenerForSingleValueEvent(new ValueEventListener() {
+             @RequiresApi(api = Build.VERSION_CODES.N)
+             @Override
+             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                 List<List<HashMap<Object, Object>>> fieldList = (List<List<HashMap<Object, Object>>>) snapshot.getValue();
+                 if (fieldList != null) {
+                     opponentMatrix = new Matrix(fieldList);
+                     opponentAdapter = new MatrixAdapter(getApplicationContext(), opponentMatrix,
+                             true, (OnCellClickListener) context, gameViewModel.hostStep.getValue() == isHost);
+                     opponentRecyclerView.setAdapter(opponentAdapter);
+                 }
+             }
 
+             @Override
+             public void onCancelled(@NonNull DatabaseError error) {
 
-        gameDatabaseReference.child(opponentMatrixPath).addListenerForSingleValueEvent(new ValueEventListener() {
-            @RequiresApi(api = Build.VERSION_CODES.N)
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                List<List<HashMap<Object, Object>>> fieldList = (List<List<HashMap<Object, Object>>>) snapshot.getValue();
-                if (fieldList != null) {
-                    opponentMatrix = new Matrix(fieldList);
-                    opponentAdapter = new MatrixAdapter(getApplicationContext(), opponentMatrix,
-                            true, (OnCellClickListener) context, gameViewModel.hostStep.getValue() == isHost);
-                    opponentRecyclerView.setAdapter(opponentAdapter);
-                    //gameDatabaseReference.removeEventListener(this);
-                }
-            }
+             }
+         });
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-        gameDatabaseReference.child(playerMatrixPath).addValueEventListener(new ValueEventListener() {
+        playerMatrixValueEventListener = gameDatabaseReference.child(playerMatrixPath).addValueEventListener(new ValueEventListener() {
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -153,7 +159,8 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
 
             }
         });
-        gameDatabaseReference.child("hostStep").addValueEventListener(new ValueEventListener() {
+
+        hostStepValueEventListener = gameDatabaseReference.child("hostStep").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 boolean isHostStep = snapshot.getValue(Boolean.class);
@@ -188,10 +195,12 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
         playerStepImage.setVisibility(View.VISIBLE);
         opponentStepImage.setVisibility(View.INVISIBLE);
     }
+
     private void ShowOpponentStepImage(){
         playerStepImage.setVisibility(View.INVISIBLE);
         opponentStepImage.setVisibility(View.VISIBLE);
     }
+
     private void InitializeDisplaying(){
         if(isHost){
             playerNicknameText.setText(Objects.requireNonNull(gameViewModel.hostUser.getValue()).username);
@@ -223,5 +232,26 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
             }
         }
         gameDatabaseReference.child(opponentMatrixPath).setValue(opponentMatrix.GetList());
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+
+        final AlertDialog aboutDialog = new AlertDialog.Builder(
+                GameActivity.this).setMessage("Are you sure tou want to leave this game?")
+                .setPositiveButton("Yes", (dialog, which) -> finish())
+                .setNegativeButton("No", (dialog, which) -> {
+                }).create();
+
+        aboutDialog.show();
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        gameDatabaseReference.removeEventListener(hostStepValueEventListener);
+        gameDatabaseReference.removeEventListener(playerMatrixValueEventListener);
     }
 }
