@@ -5,8 +5,8 @@ import androidx.fragment.app.DialogFragment;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -30,13 +30,30 @@ public class MainActivity extends AppCompatActivity {
     Button connectButton;
     Button createGameButton;
     FirebaseAuth mAuth;
+    MediaPlayer mediaPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+        getSupportActionBar().hide();
         setContentView(R.layout.activity_main);
 
+        /*VideoView videoview = (VideoView) findViewById(R.id.videoView);
+        Uri uri = Uri.parse("android.resource://"+getPackageName()+"/"+R.raw.test);
+        videoview.setVideoURI(uri);
+        videoview.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                mp.setLooping(true);
+            }
+        });
+        videoview.start();
+        */
+
+        mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.menu_sound);
+        mediaPlayer.setLooping(true);
+        mediaPlayer.start();
         mAuth = FirebaseAuth.getInstance();
 
         connectButton = findViewById(R.id.connectButton);
@@ -94,7 +111,17 @@ public class MainActivity extends AppCompatActivity {
     
     @SuppressLint("SetTextI18n")
     private void updateUI(){
+    }
 
-        
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mediaPlayer.pause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mediaPlayer.start();
     }
 }

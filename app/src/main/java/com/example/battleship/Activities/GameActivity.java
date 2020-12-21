@@ -3,8 +3,6 @@ package com.example.battleship.Activities;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -14,6 +12,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -87,7 +87,6 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
 
         gameDatabaseReference = FirebaseDatabase.getInstance().getReference("games").
                 child(Objects.requireNonNull(gameViewModel.gameId.getValue()));
-
 
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
@@ -208,11 +207,14 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onCellClicked(int row, int column, int result) {
         switch (result){
             case Constants.RESULT_HIT:{
                 opponentMatrix.matrix[row][column].type = Constants.HIT_CELL;
+                Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
                 break;
             }
             case Constants.RESULT_MISS:{
