@@ -90,17 +90,18 @@ public class CreateGameFragment extends DialogFragment {
     }
 
     private void StartGame(Game game){
+        Objects.requireNonNull(getActivity()).getSupportFragmentManager().beginTransaction().remove(this).commit();
+        if(gameEventListener != null)
+            gameDatabaseReference.removeEventListener(gameEventListener);
         Intent intent = new Intent(getContext(), LobbyActivity.class);
         intent.putExtra("game", game);
-   //     Objects.requireNonNull(getActivity()).getSupportFragmentManager().beginTransaction().remove(this).commit();
         startActivity(intent);
-        gameDatabaseReference.removeEventListener(gameEventListener);
     }
 
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
-        DeleteGame();
+      //  DeleteGame();
     }
 
     @Override

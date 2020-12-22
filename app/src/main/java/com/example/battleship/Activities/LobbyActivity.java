@@ -52,6 +52,9 @@ public class LobbyActivity extends AppCompatActivity implements
     SimpleDraweeView hostProfileImage;
     SimpleDraweeView guestProfileImage;
 
+    ValueEventListener hostReadinessListener;
+    ValueEventListener guestReadinessListener;
+    ValueEventListener gameStateListener;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     Switch readySwitch;
 
@@ -107,7 +110,7 @@ public class LobbyActivity extends AppCompatActivity implements
         });
 
         if(isHost){
-            gamesDatabaseReference.child("guestReady").addValueEventListener(new ValueEventListener() {
+            guestReadinessListener = gamesDatabaseReference.child("guestReady").addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     gameViewModel.guestIsReady.setValue(snapshot.getValue(Boolean.class));
@@ -121,7 +124,7 @@ public class LobbyActivity extends AppCompatActivity implements
                     gamesDatabaseReference.child("gameState").setValue(gameState));
         }
         else{
-            gamesDatabaseReference.child("hostReady").addValueEventListener(new ValueEventListener() {
+            hostReadinessListener = gamesDatabaseReference.child("hostReady").addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     gameViewModel.hostIsReady.setValue(snapshot.getValue(Boolean.class));
@@ -148,7 +151,8 @@ public class LobbyActivity extends AppCompatActivity implements
                 gameViewModel.guestIsReady.setValue(isChecked);
             }
         });
-        gamesDatabaseReference.child("gameState").addValueEventListener(new ValueEventListener() {
+
+        gameStateListener = gamesDatabaseReference.child("gameState").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 String gameState = snapshot.getValue(String.class);
@@ -200,6 +204,12 @@ public class LobbyActivity extends AppCompatActivity implements
             matrixReference = "connectedMatrix";
             shipsReference = "connectedShips";
         }
+        gamesDatabaseReference.removeEventListener(gameStateListener);
+        if(!isHost)
+            gamesDatabaseReference.removeEventListener(hostReadinessListener);
+        else
+            gamesDatabaseReference.removeEventListener(guestReadinessListener);
+
         gamesDatabaseReference.child(matrixReference).setValue(
                 Objects.requireNonNull(gameViewModel.playerMatrix.getValue()).GetList());
 
@@ -210,6 +220,7 @@ public class LobbyActivity extends AppCompatActivity implements
         gameViewModel.hostStep.setValue(true);
         Game game = gameViewModel.GetGameInstance();
         intent.putExtra(Constants.GAME_EXTRA, game);
+        finish();
         startActivity(intent);
     }
 
