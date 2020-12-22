@@ -18,6 +18,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.provider.ContactsContract;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -27,8 +28,10 @@ import android.widget.Toast;
 
 import com.example.battleship.Adapters.MatrixAdapter;
 import com.example.battleship.Adapters.OnCellClickListener;
+import com.example.battleship.Models.Cell;
 import com.example.battleship.Models.Game;
 import com.example.battleship.Models.Matrix;
+import com.example.battleship.Models.Ship;
 import com.example.battleship.R;
 import com.example.battleship.Utils.Constants;
 import com.example.battleship.ViewModels.GameViewModel;
@@ -43,6 +46,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -73,10 +78,13 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
     ValueEventListener hostStepValueEventListener;
 
     DatabaseReference gameDatabaseReference;
-    Matrix opponentMatrix;
 
     String opponentMatrixPath;
     String playerMatrixPath;
+
+    String opponentShipsPath;
+    String playerShipsPath;
+
 
     boolean isHost;
 
@@ -109,6 +117,9 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
         opponentMatrixPath = isHost ? "connectedMatrix" : "hostMatrix";
         playerMatrixPath = !isHost ? "connectedMatrix" : "hostMatrix";
 
+        opponentShipsPath = isHost ? "connectedShips" : "hostShips";
+        playerShipsPath = !isHost ? "connectedShips" : "hostShips";
+
         playerNicknameText = findViewById(R.id.playerNicknameText);
         opponentNicknameText = findViewById(R.id.opponentNicknameText);
 
@@ -123,21 +134,31 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
         playerRecyclerView.setLayoutManager(new GridLayoutManager(getApplicationContext(), 10));
         opponentRecyclerView.setLayoutManager(new GridLayoutManager(getApplicationContext(), 10));
 
-        Matrix playerMatrix = gameViewModel.playerMatrix.getValue();
-        playerAdapter = new MatrixAdapter(this, playerMatrix, false, this, false);
+        playerAdapter = new MatrixAdapter(this, gameViewModel.opponentMatrix.getValue().matrix, false, this, false);
         playerRecyclerView.setAdapter(playerAdapter);
 
         Context context = this;
-        gameDatabaseReference.child(opponentMatrixPath).addListenerForSingleValueEvent(new ValueEventListener() {
+        gameDatabaseReference.child(opponentMatrixPath).addValueEventListener(new ValueEventListener() {
              @RequiresApi(api = Build.VERSION_CODES.N)
              @Override
              public void onDataChange(@NonNull DataSnapshot snapshot) {
-                 List<List<HashMap<Object, Object>>> fieldList = (List<List<HashMap<Object, Object>>>) snapshot.getValue();
-                 if (fieldList != null) {
-                     opponentMatrix = new Matrix(fieldList);
-                     opponentAdapter = new MatrixAdapter(getApplicationContext(), opponentMatrix,
+                 if (snapshot.getValue() != null) {
+                     Cell[][] opponentMatrix = new Cell[10][10];
+                     int row = 0;
+                     int column = 0;
+                     for (DataSnapshot rowSnapshot : snapshot.getChildren()) {
+                         for (DataSnapshot columnSnapshot : rowSnapshot.getChildren()) {
+                             opponentMatrix[row][column]  = columnSnapshot.getValue(Cell.class);
+                            column++;
+                         }
+                         row++;
+                         column = 0;
+                     }
+                     gameViewModel.opponentMatrix.getValue().matrix = opponentMatrix;
+                     opponentAdapter = new MatrixAdapter(getApplicationContext(), gameViewModel.opponentMatrix.getValue().matrix,
                              true, (OnCellClickListener) context, gameViewModel.hostStep.getValue() == isHost);
                      opponentRecyclerView.setAdapter(opponentAdapter);
+                     gameDatabaseReference.child(opponentMatrixPath).removeEventListener(this);
                  }
              }
 
@@ -146,13 +167,44 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
 
              }
          });
+
+        gameDatabaseReference.child(opponentShipsPath).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if(snapshot.getValue() != null ){
+                    List<Ship> ships = new ArrayList<Ship>();
+                    for(DataSnapshot dataSnapshot:snapshot.getChildren() ){
+                        ships.add(dataSnapshot.getValue(Ship.class));
+                    }
+                    gameViewModel.opponentMatrix.getValue().ships = ships;
+                    gameDatabaseReference.child(opponentShipsPath).removeEventListener(this);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
         playerMatrixValueEventListener = gameDatabaseReference.child(playerMatrixPath).addValueEventListener(new ValueEventListener() {
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                List<List<HashMap<Object, Object>>> fieldList = (List<List<HashMap<Object, Object>>>) snapshot.getValue();
-                if (fieldList != null) {
-                    playerAdapter.UpdateMatrix(new Matrix(fieldList));
+                if (snapshot.getValue() != null) {
+                    Cell[][] playerMatrix = new Cell[10][10];
+                    int row = 0;
+                    int column = 0;
+                    for (DataSnapshot rowSnapshot : snapshot.getChildren()) {
+                        for (DataSnapshot columnSnapshot : rowSnapshot.getChildren()) {
+                            playerMatrix[row][column] = columnSnapshot.getValue(Cell.class);
+                            column++;
+                        }
+                        column = 0;
+                        row++;
+                    }
+                    gameViewModel.playerMatrix.getValue().matrix = playerMatrix;
+                    playerAdapter.UpdateMatrix(gameViewModel.playerMatrix.getValue().matrix);
                 }
             }
 
@@ -220,12 +272,10 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
         playerStepImage.setVisibility(View.VISIBLE);
         opponentStepImage.setVisibility(View.INVISIBLE);
     }
-
     private void ShowOpponentStepImage(){
         playerStepImage.setVisibility(View.INVISIBLE);
         opponentStepImage.setVisibility(View.VISIBLE);
     }
-
     private void InitializeDisplaying(){
         if(isHost){
             playerNicknameText.setText(Objects.requireNonNull(gameViewModel.hostUser.getValue()).username);
@@ -246,18 +296,21 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
     public void onCellClicked(int row, int column, int result) {
         switch (result){
             case Constants.RESULT_HIT:{
-                opponentMatrix.matrix[row][column].type = Constants.HIT_CELL;
+                gameViewModel.opponentMatrix.getValue().matrix[row][column].setType(Constants.HIT_CELL);
+                gameViewModel.opponentMatrix.getValue().CheckShip(row, column);
+                opponentAdapter.UpdateMatrix(gameViewModel.opponentMatrix.getValue().matrix);
                 Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
                 v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
                 gameViewModel.hitsToWin.setValue(gameViewModel.hitsToWin.getValue() - 1);
                 break;
             }
             case Constants.RESULT_MISS:{
-                opponentMatrix.matrix[row][column].type = Constants.CHECKED_CELL;
+                gameViewModel.opponentMatrix.getValue().matrix[row][column].setType(Constants.CHECKED_CELL);
                 gameDatabaseReference.child("hostStep").setValue(!isHost);
             }
         }
-        gameDatabaseReference.child(opponentMatrixPath).setValue(opponentMatrix.GetList());
+        List<List<Cell>> matrixList = gameViewModel.opponentMatrix.getValue().GetList();
+        gameDatabaseReference.child(opponentMatrixPath).setValue(matrixList);
     }
 
     @Override

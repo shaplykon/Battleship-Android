@@ -54,8 +54,6 @@ public class GameViewModel extends ViewModel {
     }
 
     public Game GetGameInstance() {
-
-
         return new Game(
                 hostUser.getValue(),
                 guestUser.getValue(),

@@ -11,6 +11,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.battleship.Models.Cell;
 import com.example.battleship.Models.Matrix;
 import com.example.battleship.R;
 import com.example.battleship.Utils.Constants;
@@ -18,7 +19,7 @@ import com.example.battleship.Utils.Constants;
 
 public class MatrixAdapter extends RecyclerView.Adapter<MatrixAdapter.ViewHolder> {
 
-    Matrix matrix;
+    Cell[][] matrix;
     Context context;
     OnCellClickListener mOnCellClickListener;
     boolean isOpponentMatrix;
@@ -29,7 +30,7 @@ public class MatrixAdapter extends RecyclerView.Adapter<MatrixAdapter.ViewHolder
         notifyDataSetChanged();
     }
 
-    public void UpdateMatrix(Matrix matrix){
+    public void UpdateMatrix(Cell[][] matrix){
         this.matrix = matrix;
         notifyDataSetChanged();
     }
@@ -39,7 +40,7 @@ public class MatrixAdapter extends RecyclerView.Adapter<MatrixAdapter.ViewHolder
         notifyDataSetChanged();
     }
 
-    public MatrixAdapter(Context context, Matrix matrix, boolean isOpponentMatrix,
+    public MatrixAdapter(Context context, Cell[][] matrix, boolean isOpponentMatrix,
                          OnCellClickListener onCellClickListener, boolean clickAllowed){
         this.isOpponentMatrix = isOpponentMatrix;
         this.matrix = matrix;
@@ -66,12 +67,12 @@ public class MatrixAdapter extends RecyclerView.Adapter<MatrixAdapter.ViewHolder
 
         holder.cellImageView.setImageResource(R.drawable.square);
         View.OnClickListener onCellClicked = v -> {
-            if (matrix.matrix[row][column].type == Constants.SHIP_CELL) {
+            if (matrix[row][column].getType() == Constants.SHIP_CELL) {
                 holder.cellImageView.setImageResource(R.drawable.hit);
                 mOnCellClickListener.onCellClicked(row, column, Constants.RESULT_HIT);
-                matrix.matrix[row][column].type = Constants.HIT_CELL;
-            } else if (matrix.matrix[row][column].type == Constants.NEARBY_CELL ||
-                    matrix.matrix[row][column].type == Constants.EMPTY_CELL) {
+                matrix[row][column].setType(Constants.HIT_CELL);
+            } else if (matrix[row][column].getType() == Constants.NEARBY_CELL ||
+                    matrix[row][column].getType() == Constants.EMPTY_CELL) {
                 holder.cellImageView.setImageResource(R.drawable.miss);
                 mOnCellClickListener.onCellClicked(row, column, Constants.RESULT_MISS);
             }
@@ -79,7 +80,7 @@ public class MatrixAdapter extends RecyclerView.Adapter<MatrixAdapter.ViewHolder
         };
 
         if (!isOpponentMatrix) {
-            if (matrix.matrix[row][column].type == Constants.SHIP_CELL)
+            if (matrix[row][column].getType() == Constants.SHIP_CELL)
                 holder.cellImageView.setBackgroundColor(R.color.black);
         }
         else {
@@ -87,9 +88,9 @@ public class MatrixAdapter extends RecyclerView.Adapter<MatrixAdapter.ViewHolder
                 holder.cellImageView.setOnClickListener(onCellClicked);
         }
 
-        if (matrix.matrix[row][column].type == Constants.HIT_CELL) {
+        if (matrix[row][column].getType() == Constants.HIT_CELL) {
             holder.cellImageView.setImageResource(R.drawable.hit);
-        } else if (matrix.matrix[row][column].type == Constants.CHECKED_CELL) {
+        } else if (matrix[row][column].getType() == Constants.CHECKED_CELL) {
             holder.cellImageView.setImageResource(R.drawable.miss);
         }
     }

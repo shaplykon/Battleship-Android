@@ -192,14 +192,18 @@ public class LobbyActivity extends AppCompatActivity implements
     }
     private void StartGame() {
         String matrixReference;
-        if (isHost)
+        String shipsReference;
+        if (isHost){
             matrixReference = "hostMatrix";
-        else
+            shipsReference = "hostShips";}
+        else {
             matrixReference = "connectedMatrix";
-
+            shipsReference = "connectedShips";
+        }
         gamesDatabaseReference.child(matrixReference).setValue(
                 Objects.requireNonNull(gameViewModel.playerMatrix.getValue()).GetList());
 
+        gamesDatabaseReference.child( shipsReference).setValue(gameViewModel.playerMatrix.getValue().ships);
         gamesDatabaseReference.child("hostStep").setValue(true);
         Intent intent = new Intent(getApplicationContext(), GameActivity.class);
         gameViewModel.SetOpponentMatrix();
