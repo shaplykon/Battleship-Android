@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.battleship.Adapters.StatisticsAdapter;
-import com.example.battleship.Models.Ship;
 import com.example.battleship.Models.Statistic;
 import com.example.battleship.R;
 import com.google.firebase.database.DataSnapshot;

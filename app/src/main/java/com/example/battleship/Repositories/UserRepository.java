@@ -10,7 +10,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 public class UserRepository {
-    public static void GetUserAsynchronous(String uid, FirebaseUserCallback firebaseUserCallback){
+   /* public static void GetUserAsynchronous(String uid, FirebaseUserCallback firebaseUserCallback){
         DatabaseReference userReference = FirebaseDatabase.getInstance().getReference("/users/").child(uid);
         ValueEventListener valueEventListener = new ValueEventListener() {
             @Override
@@ -24,6 +24,6 @@ public class UserRepository {
         };
 
         userReference.addListenerForSingleValueEvent(valueEventListener);
-    }
+    }*/
 }
 
