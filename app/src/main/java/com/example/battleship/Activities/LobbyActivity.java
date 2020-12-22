@@ -2,6 +2,7 @@ package com.example.battleship.Activities;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.annotation.SuppressLint;
@@ -52,9 +53,6 @@ public class LobbyActivity extends AppCompatActivity implements
     SimpleDraweeView hostProfileImage;
     SimpleDraweeView guestProfileImage;
 
-    ValueEventListener hostReadinessListener;
-    ValueEventListener guestReadinessListener;
-    ValueEventListener gameStateListener;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     Switch readySwitch;
 
@@ -78,13 +76,8 @@ public class LobbyActivity extends AppCompatActivity implements
 
         Intent intent = getIntent();
         Game game = (Game) intent.getSerializableExtra("game");
-
         isHost = Objects.equals(currentUser.getDisplayName(), game.getHostUser().username);
-
         gameViewModel = new ViewModelProvider(this, new GameViewModelFactory(game)).get(GameViewModel.class);
-
-        gamesDatabaseReference = FirebaseDatabase.getInstance().getReference().child("games").
-                child(Objects.requireNonNull(gameViewModel.gameId.getValue()));
 
         fragmentManager = getSupportFragmentManager();
         ShowConnectionDetails(game);
@@ -92,47 +85,36 @@ public class LobbyActivity extends AppCompatActivity implements
         gameViewModel.guestIsReady.observe(this, isReady -> {
             if (isReady) {
                 guestReadyImage.setImageResource(R.drawable.check);
-                if (isHost){
+                if (isHost)
                     CheckReadiness();
-                    }
-            } else {
-                        guestReadyImage.setImageResource(R.drawable.close);
-            }});
+            } else
+                guestReadyImage.setImageResource(R.drawable.close);
+            });
         gameViewModel.hostIsReady.observe(this, isReady -> {
             if (isReady) {
                 hostReadyImage.setImageResource(R.drawable.check);
-                if (isHost) {
+                if (isHost)
                     CheckReadiness();
-                }
-            } else {
+
+            } else
                 hostReadyImage.setImageResource(R.drawable.close);
-            }
+
         });
 
-        if(isHost){
-            guestReadinessListener = gamesDatabaseReference.child("guestReady").addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    gameViewModel.guestIsReady.setValue(snapshot.getValue(Boolean.class));
-                }
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-
-                }
+        if(isHost) {
+            gameViewModel.ObserveReadiness("guestReady");
+            gameViewModel.gameState.observe(this, gameState -> {
+                gameViewModel.SetGameState(gameState);
+                if(gameState.equals(Constants.ACTIVE_STATE))
+                    StartGame();
             });
-           gameViewModel.gameState.observe(this, gameState ->
-                    gamesDatabaseReference.child("gameState").setValue(gameState));
+
         }
         else{
-            hostReadinessListener = gamesDatabaseReference.child("hostReady").addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    gameViewModel.hostIsReady.setValue(snapshot.getValue(Boolean.class));
-                }
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-
-                }
+            gameViewModel.ObserveReadiness("hostReady");
+            gameViewModel.gameState.observe(this, gameState -> {
+                if(gameState.equals(Constants.ACTIVE_STATE))
+                    StartGame();
             });
         }
 
@@ -142,30 +124,14 @@ public class LobbyActivity extends AppCompatActivity implements
             HideField();
             ShowField();
         });
+
         readySwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isHost) {
-                gamesDatabaseReference.child("hostReady").setValue(isChecked);
-                gameViewModel.hostIsReady.setValue(isChecked);
-            } else {
-                gamesDatabaseReference.child("guestReady").setValue(isChecked);
-                gameViewModel.guestIsReady.setValue(isChecked);
-            }
+            if (isHost)
+                gameViewModel.SetReadiness("hostReady", isChecked);
+            else
+                gameViewModel.SetReadiness("guestReady", isChecked);
         });
-
-        gameStateListener = gamesDatabaseReference.child("gameState").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                String gameState = snapshot.getValue(String.class);
-                assert gameState != null;
-                if(gameState.equals(Constants.ACTIVE_STATE)){
-                    StartGame();
-                }
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
+        gameViewModel.ObserveGameState();
     }
     private void CheckReadiness(){
         if(gameViewModel.hostIsReady.getValue() && gameViewModel.guestIsReady.getValue()){
@@ -195,26 +161,8 @@ public class LobbyActivity extends AppCompatActivity implements
                 .commit();
     }
     private void StartGame() {
-        String matrixReference;
-        String shipsReference;
-        if (isHost){
-            matrixReference = "hostMatrix";
-            shipsReference = "hostShips";}
-        else {
-            matrixReference = "connectedMatrix";
-            shipsReference = "connectedShips";
-        }
-        gamesDatabaseReference.removeEventListener(gameStateListener);
-        if(!isHost)
-            gamesDatabaseReference.removeEventListener(hostReadinessListener);
-        else
-            gamesDatabaseReference.removeEventListener(guestReadinessListener);
+        gameViewModel.StartGame(isHost);
 
-        gamesDatabaseReference.child(matrixReference).setValue(
-                Objects.requireNonNull(gameViewModel.playerMatrix.getValue()).GetList());
-
-        gamesDatabaseReference.child( shipsReference).setValue(gameViewModel.playerMatrix.getValue().ships);
-        gamesDatabaseReference.child("hostStep").setValue(true);
         Intent intent = new Intent(getApplicationContext(), GameActivity.class);
         gameViewModel.SetOpponentMatrix();
         gameViewModel.hostStep.setValue(true);
@@ -223,7 +171,6 @@ public class LobbyActivity extends AppCompatActivity implements
         finish();
         startActivity(intent);
     }
-
     @Override
     public void OnFieldChanged(Matrix matrix) {
         gameViewModel.SetPlayerMatrix(matrix);

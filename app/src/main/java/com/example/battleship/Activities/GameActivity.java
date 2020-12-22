@@ -73,17 +73,11 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
 
     GameViewModel gameViewModel;
 
-    ValueEventListener playerMatrixValueEventListener;
-    ValueEventListener hostStepValueEventListener;
-
-    DatabaseReference gameDatabaseReference;
-    DatabaseReference statisticsDatabaseReference;
     String opponentMatrixPath;
     String playerMatrixPath;
 
     String opponentShipsPath;
     String playerShipsPath;
-
 
     boolean isHost;
 
@@ -101,11 +95,6 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
         Intent intent = getIntent();
         Game game = (Game) intent.getSerializableExtra(Constants.GAME_EXTRA);
         gameViewModel = new ViewModelProvider(this, new GameViewModelFactory(game)).get(GameViewModel.class);
-
-        statisticsDatabaseReference = FirebaseDatabase.getInstance().getReference("statistics");
-
-        gameDatabaseReference = FirebaseDatabase.getInstance().getReference("games").
-                child(Objects.requireNonNull(gameViewModel.gameId.getValue()));
 
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
@@ -144,49 +133,23 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
         gameViewModel.ObserveOpponentMatrix(opponentMatrixPath);
         gameViewModel.ObservePlayerMatrix(playerMatrixPath);
         gameViewModel.ObserveWin();
+        gameViewModel.ObserveStep();
+        gameViewModel.ObserveOpponentShips(opponentShipsPath);
 
-        gameViewModel.playerMatrix.observe(this, matrix -> {
-            playerAdapter.UpdateMatrix(matrix.matrix);
+        gameViewModel.hostWin.observe(this, hostWin -> {
+            if (hostWin)
+                Toast.makeText(getApplicationContext(),
+                        Objects.requireNonNull(gameViewModel.hostUser.getValue()).username + " wins!", Toast.LENGTH_LONG).show();
+            else
+                Toast.makeText(getApplicationContext(),
+                        Objects.requireNonNull(gameViewModel.guestUser.getValue()).username + " wins!", Toast.LENGTH_LONG).show();
+            opponentAdapter.SetClickable(false);
+            opponentAdapter.ShowShipsAfterDefeat();
+            if(isHost)
+                gameViewModel.SaveResult(hostWin);
+            DialogFragment statisticsFragment = new StatisticsFragment();
+            statisticsFragment.show(getSupportFragmentManager(), "statisticsFragment");
         });
-        gameViewModel.opponentMatrix.observe(this, matrix -> {
-            opponentAdapter = new MatrixAdapter(getApplicationContext(), matrix.matrix,
-                    true, GameActivity.this,
-                    gameViewModel.hostStep.getValue() == isHost);
-            opponentRecyclerView.setAdapter(opponentAdapter);
-        });
-
-        gameDatabaseReference.child(opponentShipsPath).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if(snapshot.getValue() != null ){
-                    List<Ship> ships = new ArrayList<>();
-                    for(DataSnapshot dataSnapshot:snapshot.getChildren() ){
-                        ships.add(dataSnapshot.getValue(Ship.class));
-                    }
-                    gameViewModel.opponentMatrix.getValue().ships = ships;
-                    gameDatabaseReference.child(opponentShipsPath).removeEventListener(this);
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-
-        hostStepValueEventListener = gameDatabaseReference.child("hostStep").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                boolean isHostStep = snapshot.getValue(Boolean.class);
-                gameViewModel.hostStep.setValue(isHostStep);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-
         gameViewModel.hostStep.observe(this, isHostStep -> {
             if (isHostStep) {
                 if (isHost)
@@ -203,62 +166,19 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
             if (opponentAdapter != null)
                 opponentAdapter.SetClickable(isHostStep == isHost);
         });
-
+        gameViewModel.playerMatrix.observe(this, matrix -> {
+            playerAdapter.UpdateMatrix(matrix.matrix);
+        });
+        gameViewModel.opponentMatrix.observe(this, matrix -> {
+            opponentAdapter = new MatrixAdapter(getApplicationContext(), matrix.matrix,
+                    true, GameActivity.this,
+                    gameViewModel.hostStep.getValue() == isHost);
+            opponentRecyclerView.setAdapter(opponentAdapter);
+        });
         gameViewModel.hitsToWin.observe(this, hitsToWin -> {
-            if(hitsToWin == 0) {
-                gameDatabaseReference.child("hostWin").setValue(isHost);
-                gameDatabaseReference.child("gameState").setValue(Constants.FINISHED_STATE);
-            }});
-
-        gameViewModel.hostWin.observe(this, hostWin -> {
-            if (hostWin)
-                Toast.makeText(getApplicationContext(),
-                        Objects.requireNonNull(gameViewModel.hostUser.getValue()).username + " wins!", Toast.LENGTH_LONG).show();
-            else
-                Toast.makeText(getApplicationContext(),
-                        Objects.requireNonNull(gameViewModel.guestUser.getValue()).username + " wins!", Toast.LENGTH_LONG).show();
-            opponentAdapter.SetClickable(false);
-            opponentAdapter.ShowShipsAfterDefeat();
-            if(isHost)
-                SaveResult(hostWin);
-        });
-
-        statisticsDatabaseReference.child(gameViewModel.gameId.getValue()).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if(snapshot.getValue() != null){
-                    DialogFragment statisticsFragment = new StatisticsFragment();
-                    statisticsFragment.show(getSupportFragmentManager(), "statisticsFragment");
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-    }
-
-    private void SaveResult(boolean hostWin) {
-        User winner;
-        User loser;
-        if(hostWin){
-            winner = gameViewModel.hostUser.getValue();
-            loser = gameViewModel.guestUser.getValue();
-        }
-        else{
-            winner = gameViewModel.guestUser.getValue();
-            loser = gameViewModel.hostUser.getValue();
-        }
-        @SuppressLint("SimpleDateFormat")
-        SimpleDateFormat formatForDateNow = new SimpleDateFormat("HH:mm:ss yyyy.MM.dd ");
-        @SuppressLint("SimpleDateFormat")
-        SimpleDateFormat formatForTimeNow = new SimpleDateFormat("HH:mm:ss");
-
-        Statistic statistic = new Statistic(winner, loser, formatForDateNow.format(new Date()), formatForTimeNow.format(new Date()));
-
-
-        statisticsDatabaseReference.child(gameViewModel.gameId.getValue()).setValue(statistic);
+            if(hitsToWin == 0)
+                gameViewModel.FinishGame(isHost);
+            });
     }
 
     private void ShowPlayerStepImage() {
@@ -301,12 +221,10 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
             case Constants.RESULT_MISS:{
                 Objects.requireNonNull(gameViewModel.opponentMatrix.getValue()).
                         matrix[row][column].setType(Constants.CHECKED_CELL);
-                gameDatabaseReference.child("hostStep").setValue(!isHost);
+                gameViewModel.SetStep(isHost);
             }
         }
-        List<List<Cell>> matrixList =
-                Objects.requireNonNull(gameViewModel.opponentMatrix.getValue()).GetList();
-        gameDatabaseReference.child(opponentMatrixPath).setValue(matrixList);
+        gameViewModel.UpdateOpponentMatrix(opponentMatrixPath);
     }
 
     @Override
@@ -322,7 +240,6 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        gameDatabaseReference.removeEventListener(hostStepValueEventListener);
-        gameDatabaseReference.removeEventListener(playerMatrixValueEventListener);
+
     }
 }
