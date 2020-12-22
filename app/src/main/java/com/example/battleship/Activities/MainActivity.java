@@ -14,20 +14,15 @@ import android.widget.Toast;
 
 import com.example.battleship.Fragments.ConnectGameFragment;
 import com.example.battleship.Fragments.CreateGameFragment;
-import com.example.battleship.Fragments.StatisticsFragment;
-import com.example.battleship.Models.Statistic;
-import com.example.battleship.Models.User;
 import com.example.battleship.R;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-import java.sql.Time;
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -45,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        getSupportActionBar().hide();
+        Objects.requireNonNull(getSupportActionBar()).hide();
         setContentView(R.layout.activity_main);
 
         mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.menu_sound);

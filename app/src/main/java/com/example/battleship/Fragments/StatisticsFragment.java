@@ -1,8 +1,8 @@
 package com.example.battleship.Fragments;
 
-import android.annotation.SuppressLint;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -11,16 +11,17 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.battleship.Adapters.StatisticsAdapter;
+import com.example.battleship.Models.Ship;
 import com.example.battleship.Models.Statistic;
-import com.example.battleship.Models.User;
 import com.example.battleship.R;
-import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 public class StatisticsFragment extends DialogFragment {
 
@@ -35,23 +36,27 @@ public class StatisticsFragment extends DialogFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_statistics, container, false);
-        FirebaseAuth mAuth = FirebaseAuth.getInstance();
         List<Statistic> statistics=  new ArrayList<>();
-        for(int i = 0; i < 10; i++){
-            User user = new User(
-                    Objects.requireNonNull(mAuth.getCurrentUser()).getUid(),
-                    mAuth.getCurrentUser().getDisplayName(),
-                    Objects.requireNonNull(mAuth.getCurrentUser().getPhotoUrl()).toString());
+        DatabaseReference statisticsDatabaseReference = FirebaseDatabase.getInstance().getReference("statistics");
 
-            @SuppressLint("SimpleDateFormat")
-            SimpleDateFormat formatForDateNow = new SimpleDateFormat("HH:mm:ss yyyy.MM.dd ");
-            SimpleDateFormat formatForTimeNow = new SimpleDateFormat("HH:mm:ss");
-            statistics.add(new Statistic(user, user, formatForDateNow.format(new Date()), formatForTimeNow.format(new Date())));
-        }
+        statisticsDatabaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if(snapshot.getValue() != null ){
+                    for(DataSnapshot sampleSnapshot:snapshot.getChildren()){
+                        statistics.add(sampleSnapshot.getValue(Statistic.class));
+                        RecyclerView statisticsRecycler = view.findViewById(R.id.statisticsRecycler);
+                        StatisticsAdapter statisticsAdapter = new StatisticsAdapter(statistics, getContext());
+                        statisticsRecycler.setAdapter(statisticsAdapter);
+                    }
+                }
+            }
 
-        RecyclerView statisticsRecycler = view.findViewById(R.id.statisticsRecycler);
-        StatisticsAdapter statisticsAdapter = new StatisticsAdapter(statistics, getContext());
-        statisticsRecycler.setAdapter(statisticsAdapter);
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
 
         return view;
     }

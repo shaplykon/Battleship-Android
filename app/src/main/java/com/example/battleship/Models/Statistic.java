@@ -8,19 +8,15 @@ public class Statistic implements Serializable {
     String date;
     String time;
 
-    public String getTime() {
-        return time;
-    }
-
-    public void setTime(String time) {
-        this.time = time;
-    }
-
     public Statistic(User winner, User loser, String date, String time){
         this.winner = winner;
         this.loser = loser;
         this.date = date;
         this.time = time;
+    }
+
+    public Statistic(){
+
     }
 
     public User getWinner() {
@@ -47,5 +43,11 @@ public class Statistic implements Serializable {
         this.date = date;
     }
 
+    public String getTime() {
+        return time;
+    }
 
+    public void setTime(String time) {
+        this.time = time;
+    }
 }
