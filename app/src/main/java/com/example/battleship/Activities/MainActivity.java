@@ -1,23 +1,31 @@
 package com.example.battleship.Activities;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.media.MediaPlayer;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.battleship.Fragments.ConnectGameFragment;
 import com.example.battleship.Fragments.CreateGameFragment;
+import com.example.battleship.Fragments.StatisticsFragment;
+import com.example.battleship.Models.Statistic;
+import com.example.battleship.Models.User;
 import com.example.battleship.R;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.sql.Time;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -32,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     FirebaseAuth mAuth;
     MediaPlayer mediaPlayer;
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -47,9 +56,10 @@ public class MainActivity extends AppCompatActivity {
         connectButton = findViewById(R.id.connectButton);
         createGameButton = findViewById(R.id.createGameButton);
 
+
         createGameButton.setOnClickListener(v -> {
             DialogFragment createGameFragment = new CreateGameFragment();
-            createGameFragment.show(getSupportFragmentManager(), "createGameFragment");
+           createGameFragment.show(getSupportFragmentManager(), "createGameFragment");
         });
 
         connectButton.setOnClickListener(v -> {
