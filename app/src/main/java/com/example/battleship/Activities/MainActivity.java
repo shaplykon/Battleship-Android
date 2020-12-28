@@ -90,20 +90,9 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == RC_SIGN_IN) {
-            IdpResponse response = IdpResponse.fromResultIntent(data);
-
-            if (resultCode == RESULT_OK) {
-                FirebaseUser user = mAuth.getCurrentUser();
-                updateUI();
-            } else {
+            if (resultCode != RESULT_OK)
                 Toast.makeText(this, "Problem occurred while authenticating", Toast.LENGTH_SHORT).show();
-                        
-            }
         }
-    }
-    
-    @SuppressLint("SetTextI18n")
-    private void updateUI(){
     }
 
     @Override

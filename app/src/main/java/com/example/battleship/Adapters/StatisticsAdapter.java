@@ -38,10 +38,10 @@ public class StatisticsAdapter extends RecyclerView.Adapter<StatisticsAdapter.Vi
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.winnerImage.setImageURI(statistics.get(position).getWinner().profileImageUrl);
-        holder.loserImage.setImageURI(statistics.get(position).getLoser().profileImageUrl);
-        holder.winnerUsername.setText(statistics.get(position).getWinner().username);
-        holder.loserUsername.setText(statistics.get(position).getLoser().username);
+        holder.winnerImage.setImageURI(statistics.get(position).getWinner().getProfileImageUrl());
+        holder.loserImage.setImageURI(statistics.get(position).getLoser().getProfileImageUrl());
+        holder.winnerUsername.setText(statistics.get(position).getWinner().getUsername());
+        holder.loserUsername.setText(statistics.get(position).getLoser().getUsername());
         holder.dateTextView.setText(statistics.get(position).getDate());
         holder.timeTextView.setText(statistics.get(position).getTime());
     }

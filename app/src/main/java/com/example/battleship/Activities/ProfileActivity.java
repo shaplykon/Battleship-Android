@@ -8,30 +8,21 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
-import com.example.battleship.Utils.HexUtil;
 import com.example.battleship.R;
-import com.example.battleship.Models.User;
+import com.example.battleship.ViewModels.ProfileViewModel;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.firebase.ui.auth.AuthUI;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.UserProfileChangeRequest;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
-
-import java.util.UUID;
 
 
 public class ProfileActivity extends AppCompatActivity {
@@ -57,6 +48,8 @@ public class ProfileActivity extends AppCompatActivity {
 
     Uri selectedPhotoUri;
 
+    ProfileViewModel profileViewModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,18 +72,42 @@ public class ProfileActivity extends AppCompatActivity {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         editor = sharedPreferences.edit();
 
+        boolean gravatarUsing = sharedPreferences.getBoolean("gravatarUsing", false);
+
+        profileViewModel = new ProfileViewModel(gravatarUsing, currentUser);
+
+        usernameEdit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+            @Override
+            public void afterTextChanged(Editable username) {
+                profileViewModel.username.setValue(username.toString());
+            }
+        });
+
         confirmButton.setOnClickListener(v -> {
-            uploadPhotoToFirebaseStorage();
+            editor.putBoolean("gravatarUsing", profileViewModel.isGravatarUsed.getValue());
+            editor.apply();
+            profileViewModel.SaveChanges();
             finish();
         });
 
-        gravatarSwitch.setOnCheckedChangeListener((buttonView, isGravatarUsed) -> {
-            editor.putBoolean("gravatarUsing", isGravatarUsed);
-            editor.apply();
-            profileImageView.setImageURI(getProfileImageUri(isGravatarUsed));
-
+        profileViewModel.isGravatarUsed.observe(this, isGravatarUsed -> {
+            profileViewModel.profileImageUri.setValue(profileViewModel.GetProfileImage());
             if(isGravatarUsed) imageUploadButton.setVisibility(View.INVISIBLE);
             else imageUploadButton.setVisibility(View.VISIBLE);
+        }
+        );
+
+        profileViewModel.profileImageUri.observe(this,
+                s -> profileImageView.setImageURI(Uri.parse(profileViewModel.profileImageUri.getValue())));
+
+        gravatarSwitch.setOnCheckedChangeListener((buttonView, isGravatarUsed) -> {
+            profileViewModel.isGravatarUsed.setValue(isGravatarUsed);
         });
 
         signOutButton.setOnClickListener(v -> AuthUI.getInstance().signOut(getApplicationContext()).addOnCompleteListener(task -> {
@@ -107,37 +124,9 @@ public class ProfileActivity extends AppCompatActivity {
 
         });
 
-        boolean gravatarUsing = sharedPreferences.getBoolean("gravatarUsing", false);
-        profileImageView.setImageURI(getProfileImageUri(gravatarUsing));
+
+        profileImageView.setImageURI(profileViewModel.profileImageUri.getValue());
         gravatarSwitch.setChecked(gravatarUsing);
-    }
-
-    private void uploadPhotoToFirebaseStorage(){
-        if(selectedPhotoUri == null) return;
-
-        String filename = UUID.randomUUID().toString();
-        StorageReference reference =  FirebaseStorage.getInstance().getReference("/images/" + filename);
-
-
-        reference.putFile(selectedPhotoUri).addOnSuccessListener(
-                taskSnapshot -> reference.getDownloadUrl().addOnSuccessListener(
-                        this::saveChangesToFirebaseDatabase));
-    }
-
-    private void saveChangesToFirebaseDatabase(Uri profileImageUri) {
-        if (currentUser != null) {
-            String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("/users/" + uid);
-            User user = new User(uid, usernameEdit.getText().toString(), profileImageUri.toString());
-            databaseReference.setValue(user).addOnSuccessListener(aVoid -> {
-                Log.d("ProfileActivity", "Changes saved to database");
-                UserProfileChangeRequest changeRequest = new UserProfileChangeRequest.Builder()
-                        .setDisplayName(user.username)
-                        .setPhotoUri(profileImageUri)
-                        .build();
-                currentUser.updateProfile(changeRequest);
-            });
-        }
     }
 
     @Override
@@ -145,26 +134,8 @@ public class ProfileActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == PICK_IMAGE_ACTION && resultCode == RESULT_OK && data != null){
             selectedPhotoUri = data.getData();
-            
-            profileImageView.setImageURI(selectedPhotoUri);
+            profileViewModel.profileImageUri.setValue(selectedPhotoUri.toString());
         }
     }
-    private Uri getProfileImageUri(boolean isGravatarUsed){
-        Uri profileImageUri;
 
-        if (isGravatarUsed) {
-            String email = currentUser.getEmail();
-            assert email != null;
-            String hash = HexUtil.md5Hex(email.trim().toLowerCase());
-            profileImageUri = Uri.parse("https://www.gravatar.com/avatar/" + hash + "?size=256");
-        } else {
-            if (currentUser.getPhotoUrl() != null) {
-                profileImageUri = Uri.parse(currentUser.getPhotoUrl().toString());
-            } else {
-                profileImageUri = Uri.parse("https://yt3.ggpht.com/a/AATXAJwqEcDwWfOxAKdtQUUSm-" +
-                        "lLCopCNoBdoFlTv9BsTA=s900-c-k-c0xffffffff-no-rj-mo");
-            }
-        }
-        return profileImageUri;
-    }
 }

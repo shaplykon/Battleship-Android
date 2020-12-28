@@ -38,8 +38,6 @@ public class LobbyActivity extends AppCompatActivity implements
     FirebaseAuth mAuth;
 
     FragmentManager fragmentManager;
-
-    DatabaseReference gamesDatabaseReference;
     GameViewModel gameViewModel;
 
     TextView  hostTextView;
@@ -76,7 +74,7 @@ public class LobbyActivity extends AppCompatActivity implements
 
         Intent intent = getIntent();
         Game game = (Game) intent.getSerializableExtra("game");
-        isHost = Objects.equals(currentUser.getDisplayName(), game.getHostUser().username);
+        isHost = Objects.equals(currentUser.getDisplayName(), game.getHostUser().getUsername());
         gameViewModel = new ViewModelProvider(this, new GameViewModelFactory(game)).get(GameViewModel.class);
 
         fragmentManager = getSupportFragmentManager();
@@ -140,11 +138,11 @@ public class LobbyActivity extends AppCompatActivity implements
     }
     private void ShowConnectionDetails(Game game){
         ShowField();
-        hostTextView.setText(game.getHostUser().username);
-        guestTextView.setText(game.getConnectedUser().username);
+        hostTextView.setText(game.getHostUser().getUsername());
+        guestTextView.setText(game.getConnectedUser().getUsername());
 
-        hostProfileImage.setImageURI(game.getHostUser().profileImageUrl);
-        guestProfileImage.setImageURI(game.getConnectedUser().profileImageUrl);
+        hostProfileImage.setImageURI(game.getHostUser().getProfileImageUrl());
+        guestProfileImage.setImageURI(game.getConnectedUser().getProfileImageUrl());
       }
     private void ShowField(){
         getSupportFragmentManager().beginTransaction()

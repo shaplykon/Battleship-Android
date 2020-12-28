@@ -100,7 +100,7 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
         currentUser = mAuth.getCurrentUser();
 
         if(currentUser != null)
-            isHost = Objects.equals(currentUser.getDisplayName(), game.getHostUser().username);
+            isHost = Objects.equals(currentUser.getDisplayName(), game.getHostUser().getUsername());
 
         playerStepImage = findViewById(R.id.playerStepImage);
         opponentStepImage = findViewById(R.id.opponentStepImage);
@@ -139,10 +139,10 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
         gameViewModel.hostWin.observe(this, hostWin -> {
             if (hostWin)
                 Toast.makeText(getApplicationContext(),
-                        Objects.requireNonNull(gameViewModel.hostUser.getValue()).username + " wins!", Toast.LENGTH_LONG).show();
+                        Objects.requireNonNull(gameViewModel.hostUser.getValue()).getUsername() + " wins!", Toast.LENGTH_LONG).show();
             else
                 Toast.makeText(getApplicationContext(),
-                        Objects.requireNonNull(gameViewModel.guestUser.getValue()).username + " wins!", Toast.LENGTH_LONG).show();
+                        Objects.requireNonNull(gameViewModel.guestUser.getValue()).getUsername()+ " wins!", Toast.LENGTH_LONG).show();
             opponentAdapter.SetClickable(false);
             opponentAdapter.ShowShipsAfterDefeat();
             if(isHost)
@@ -191,16 +191,16 @@ public class GameActivity extends AppCompatActivity implements OnCellClickListen
     }
     private void InitializeDisplaying(){
         if(isHost){
-            playerNicknameText.setText(Objects.requireNonNull(gameViewModel.hostUser.getValue()).username);
-            opponentNicknameText.setText(Objects.requireNonNull(gameViewModel.guestUser.getValue()).username);
-            playerImage.setImageURI(gameViewModel.hostUser.getValue().profileImageUrl);
-            opponentImage.setImageURI(gameViewModel.guestUser.getValue().profileImageUrl);
+            playerNicknameText.setText(Objects.requireNonNull(gameViewModel.hostUser.getValue()).getUsername());
+            opponentNicknameText.setText(Objects.requireNonNull(gameViewModel.guestUser.getValue()).getUsername());
+            playerImage.setImageURI(gameViewModel.hostUser.getValue().getProfileImageUrl());
+            opponentImage.setImageURI(gameViewModel.guestUser.getValue().getProfileImageUrl());
         }
         else{
-            playerNicknameText.setText(Objects.requireNonNull(gameViewModel.guestUser.getValue()).username);
-            opponentNicknameText.setText(Objects.requireNonNull(gameViewModel.hostUser.getValue()).username);
-            playerImage.setImageURI(gameViewModel.guestUser.getValue().profileImageUrl);
-            opponentImage.setImageURI(gameViewModel.hostUser.getValue().profileImageUrl);
+            playerNicknameText.setText(Objects.requireNonNull(gameViewModel.guestUser.getValue()).getUsername());
+            opponentNicknameText.setText(Objects.requireNonNull(gameViewModel.hostUser.getValue()).getUsername());
+            playerImage.setImageURI(gameViewModel.guestUser.getValue().getProfileImageUrl());
+            opponentImage.setImageURI(gameViewModel.hostUser.getValue().getProfileImageUrl());
         }
     }
 

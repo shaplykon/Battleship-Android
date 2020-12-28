@@ -12,14 +12,38 @@ import com.google.firebase.database.ValueEventListener;
 import java.io.Serializable;
 
 public class User implements Serializable {
-    public String uid;
-    public String username;
-    public String profileImageUrl;
+    private String uid;
+    private String username;
+    private String profileImageUrl;
 
     public User(){
         this.uid = "";
         this.username = "";
         this.profileImageUrl = "";
+    }
+
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getProfileImageUrl() {
+        return profileImageUrl;
+    }
+
+    public void setProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
     }
 
     public User(String uid, String username, String profileImageUrl){
