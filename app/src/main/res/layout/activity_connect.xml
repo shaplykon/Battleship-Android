@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/Container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Activities.LobbyActivity">
+
+    <Button
+        android:id="@+id/refreshButton"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="56dp"
+        android:layout_marginTop="404dp"
+        android:text="@string/refresh"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Switch
+        android:id="@+id/readySwitch"
+        android:layout_width="93dp"
+        android:layout_height="42dp"
+        android:layout_marginTop="408dp"
+        android:layout_marginEnd="44dp"
+        android:text="@string/ready"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+    <TextView
+        android:id="@+id/hostLabel"
+        android:layout_width="49dp"
+        android:layout_height="22dp"
+        android:layout_marginStart="72dp"
+        android:layout_marginTop="192dp"
+        android:text="@string/host"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/fieldContainer" />
+
+    <TextView
+        android:id="@+id/guestLabel"
+        android:layout_width="52dp"
+        android:layout_height="29dp"
+        android:layout_marginStart="72dp"
+        android:layout_marginTop="36dp"
+        android:text="@string/guest"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/hostLabel" />
+
+
+    <com.facebook.drawee.view.SimpleDraweeView
+        android:id="@+id/hostProfileImage"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="156dp"
+        android:layout_marginTop="564dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:roundAsCircle="true" />
+
+    <com.facebook.drawee.view.SimpleDraweeView
+        android:id="@+id/guestProfileImage"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="156dp"
+        android:layout_marginTop="620dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:roundAsCircle="true" />
+
+    <FrameLayout
+        android:id="@+id/fieldContainer"
+        android:layout_width="match_parent"
+        android:layout_height="369dp"
+        android:layout_marginTop="4dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/guestTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="76dp"
+        android:layout_marginTop="32dp"
+        android:textSize="18sp"
+        app:layout_constraintStart_toEndOf="@+id/guestLabel"
+        app:layout_constraintTop_toBottomOf="@+id/hostTextView" />
+
+    <TextView
+        android:id="@+id/hostTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="80dp"
+        android:layout_marginTop="192dp"
+        android:textSize="18sp"
+        app:layout_constraintStart_toEndOf="@+id/hostLabel"
+        app:layout_constraintTop_toBottomOf="@+id/fieldContainer" />
+
+    <ImageView
+        android:id="@+id/hostReadyImage"
+        android:layout_width="26dp"
+        android:layout_height="25dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="192dp"
+        android:src="@drawable/check"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/fieldContainer" />
+
+    <ImageView
+        android:id="@+id/guestReadyImage"
+        android:layout_width="26dp"
+        android:layout_height="25dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="252dp"
+        android:src="@drawable/check"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/fieldContainer" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
